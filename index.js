@@ -1,26 +1,38 @@
-const express = require('express")
-const app = express()
+const express = require("express");
+const app = express();
 
-const bodyParser = require('body-parser')
-app.use(bodyParser .urlencoded({ extended: false }))
-app.use (bodyParser. json())
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-//import db
-const students = require(' ./db')
+// Import db
+const students = require("./db");
 
-//login
-app-post('/index', (reg, res) =› {
-    const newMember = req.body;
-    members.push (newMember);
-    res.status (201) . send ({"status" : "Welcome to BukSU fitness gym"})
+// Login
+app.post("/index", (req, res) => {
+  const newMember = req.body;
+  members.push(newMember);
+  res.status(201).send({ status: "Welcome to BukSU fitness gym" });
+});
 
-//get all
-app.get('member/all', (reg, res) => {
-res.status(201).json (members) ;
-})
+// Get all members
+app.get("/member/all", (req, res) => {
+  res.status(200).json(members);
+});
 
-//get users
-app.get('/member/i/:id',
-(req, res) => {
-const id = req-params. id;
-const s = students.find((st) -> st.id == id);
+// Get user by ID
+app.get("/member/i/:id", (req, res) => {
+  const id = req.params.id;
+  const s = members.find((st) => st.id == id);
+  if (s) {
+    res.status(200).json(s);
+  } else {
+    res.status(404).send({ status: "Member not found" });
+  }
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
