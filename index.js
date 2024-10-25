@@ -6,7 +6,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Import db
-const students = require("./db");
+const members = require("./db");
 
 // Login
 app.post("/index", (req, res) => {
@@ -17,21 +17,35 @@ app.post("/index", (req, res) => {
 
 // Get all members
 app.get("/member/all", (req, res) => {
-  res.status(200).json(members);
+  res.status(200).send(members);
 });
 
-// Get user by ID
-app.get("/member/i/:id", (req, res) => {
-  const id = req.params.id;
-  const s = members.find((st) => st.id == id);
-  if (s) {
-    res.status(200).json(s);
-  } else {
-    res.status(404).send({ status: "Member not found" });
-  }
+// Visit history
+app.get("/member/:id/visits", (req, res) => {
+  const memberId = req.params.id;
+  const visits = getVisitHistory(memberId); // Assume this function is defined elsewhere
+  res.status(200).send(visits);
 });
 
-// Start the server
+// Logout
+app.post("/logout", (req, res) => {
+  // Handle logout logic here
+  res.status(200).send({ status: "Logged out successfully" });
+});
+
+// Admin management
+app.post("/admin/add", (req, res) => {
+  const newAdmin = req.body;
+  admins.push(newAdmin);
+  res.status(201).send({ status: "Admin added successfully" });
+});
+
+app.delete("/admin/:id", (req, res) => {
+  const adminId = req.params.id;
+  removeAdmin(adminId);
+  res.status(200).send({ status: "Admin removed successfully" });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
