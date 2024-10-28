@@ -1,0 +1,205 @@
+@font-face {
+  font-family: "ClashGrotesk-Variable";
+  src: url("../assets/fonts/ClashGrotesk-Variable.woff2") format("woff2"),
+    url("../assets/fonts/ClashGrotesk-Variable.woff") format("woff"),
+    url("../assets/fonts/ClashGrotesk-Variable.ttf") format("truetype");
+  font-weight: 200 700;
+  font-style: normal;
+}
+
+.background {
+  background-image: url("../assets/images/gaussian.png");
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+/* Start styles */
+
+html,
+body {
+  background-image: url("../assets/images/gaussian.png");
+  font-family: "Inter", sans-serif !important;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.fitlogo {
+  width: 10rem;
+  height: 10rem;
+  margin-left: 6rem !important;
+  margin-top: 5rem !important;
+}
+
+.welcomepage {
+  font-family: "ClashGrotesk-Variable" !important;
+  color: white;
+  margin-left: 6rem;
+  margin-top: 3rem;
+}
+
+.FAQs {
+  border-radius: 138px 10px 10px 138px !important;
+  width: 6rem;
+  height: 3rem !important;
+  margin-right: 0.3rem;
+}
+
+.Visits {
+  border-radius: 10px 138px 138px 10px !important;
+  width: 8rem;
+  height: 3rem !important;
+}
+
+.gogo {
+  border-radius: 10px 138px 138px 10px !important;
+  margin-left: 10rem;
+  height: 3rem !important;
+  width: 10rem;
+}
+
+.groupbuttons {
+  margin-left: 6rem;
+  margin-top: 7rem;
+}
+
+h5 {
+  font-family: "ClashGrotesk-Variable";
+  font-size: 1.6rem !important;
+}
+
+p {
+  font-family: "Inter", sans-serif;
+  font-weight: medium;
+  margin-bottom: -0.2rem;
+}
+
+.card {
+  position: relative;
+  border-radius: 44px !important;
+  width: 60% !important;
+  box-shadow: 0px 0px 53.6px 0px rgba(0, 0, 0, 0.25) !important;
+  background-color: #fefbff;
+}
+
+.button-container {
+  position: absolute;
+  bottom: 30px;
+  right: 36px;
+}
+
+.signup {
+  border-radius: 37px;
+  background: #0075ff !important;
+}
+
+.material-symbols-outlined {
+  font-size: 2.8rem !important;
+  margin-bottom: 1rem;
+}
+
+.contents {
+  margin-top: 5.4rem;
+  margin-left: -3rem;
+}
+
+.half {
+  margin-top: 2rem;
+  margin-left: 3rem;
+}
+
+.idlogo {
+  margin-left: -0.5rem !important;
+  margin-bottom: 1rem;
+  width: 6rem !important;
+  height: 6rem !important;
+}
+
+.dark-background {
+  background-color: #171717;
+  color: white;
+  border-radius: 44px 0px 0px 44px;
+}
+
+.light-background {
+  background-color: white;
+  border-radius: 0px 44px 44px 0px;
+}
+
+.image-container {
+  display: grid;
+  place-items: center;
+  margin-top: 2rem;
+}
+
+.svgs,
+.requirements {
+  width: 80%;
+  margin-bottom: 1rem;
+}
+
+.requirements {
+  margin-bottom: 6rem !important;
+}
+
+.backback {
+  margin-right: 0.2rem;
+  width: 10.3rem;
+  height: 40px;
+  border-radius: 138px 10px 10px 138px !important;
+}
+
+.gotit {
+  border-radius: 10px 138px 138px 10px !important;
+  width: 10.3rem;
+  height: 40px;
+  color: white;
+}
+
+.registeranother {
+  margin-right: 0.2rem;
+  width: 20rem !important;
+  height: 40px;
+  border-radius: 138px 10px 10px 138px !important;
+}
+
+.continueto {
+  border-radius: 10px 138px 138px 10px !important;
+  width: 20rem !important;
+  height: 40px;
+  color: white;
+}
+
+.reqbuttons {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+
+.twotone {
+  position: relative;
+  border-radius: 44px !important;
+  width: 60% !important;
+  box-shadow: 0px 0px 53.6px 0px rgba(0, 0, 0, 0.25) !important;
+  background-color: #fefbff00 !important;
+}
+
+.form-check {
+  margin-bottom: 5rem;
+}
+
+.done {
+  width: 4rem !important;
+  height: 4rem !important;
+  margin-bottom: 1rem;
+}
+
+.successcard {
+  margin-left: 3rem;
+  margin-top: 1rem;
+  margin-bottom: 6rem;
+}
+
+.table {
+  margin-top: 1rem !important;
+  border-radius: 44px !important;
+}

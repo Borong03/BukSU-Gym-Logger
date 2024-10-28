@@ -13,7 +13,13 @@ T172
 
 > Ctrl+Alt+Elite will develop this system, and this is our crew:
 
-- Rienier Marl S. Borong
-- Neil Marc C. Bayron
-- Ivan Loyd Panoril
-- Senen Jeremiah Patricio
+- Rienier Marl S. Borong | Project Manager
+- Neil Marc C. Bayron | Frontend Dev / Designer
+- Ivan Loyd Panoril | Backend Dev
+- Senen Jeremiah Patricio | Backend Dev
+
+
+### How to run?
+
+NPM install
+NPM start
