@@ -1,0 +1,42 @@
+// db/member.db.js
+const members = []; // Simulate a database for members
+const admins = []; // Simulate a database for admins
+
+function getAllMembers() {
+    return members;
+}
+
+function getMemberById(id) {
+    return members.find(member => member.id === id);
+}
+
+function addMember(member) {
+    members.push(member);
+    return member;
+}
+
+function getAllAdmins() {
+    return admins;
+}
+
+function addAdmin(admin) {
+    admins.push(admin);
+    return admin;
+}
+
+function removeAdmin(id) {
+    const index = admins.findIndex(admin => admin.id === id);
+    if (index !== -1) {
+        return admins.splice(index, 1)[0];
+    }
+    return null;
+}
+
+module.exports = {
+    getAllMembers,
+    getMemberById,
+    addMember,
+    getAllAdmins,
+    addAdmin,
+    removeAdmin
+};

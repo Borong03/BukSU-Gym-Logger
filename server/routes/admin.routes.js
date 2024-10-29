@@ -10,4 +10,4 @@ adminRoutes.get("/", getAllAdmins); // GET /api/admins
 adminRoutes.post("/", createAdmin); // POST /api/admins
 adminRoutes.delete("/:id", deleteAdmin); // DELETE /api/admins/:id
 
-module.exports = adminRoutes; 
+module.exports = adminRoutes;
