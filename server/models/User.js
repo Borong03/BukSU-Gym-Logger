@@ -12,5 +12,18 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+const userSchema = new mongoose.Schema({
+  googleId: {
+    type: String,
+    required: true,
+  },
+  firstName: String,
+  lastName: String,
+  email: {
+    type: String,
+    required: true,
+  },
+});
+
 // export the User model based on the UserSchema
 module.exports = mongoose.model("User", UserSchema);

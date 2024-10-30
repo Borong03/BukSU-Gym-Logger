@@ -32,19 +32,25 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// google OAuth
+// Trigger Google OAuth
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// google OAuth callback
+// Google OAuth callback
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
+    // Successful authentication, redirect to your dashboard or any other route
     res.redirect("/dashboard");
   }
+);
+
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 module.exports = router;
