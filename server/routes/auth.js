@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const passport = require("passport");
+const bcrypt = require("bcrypt");
 
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email } = req.body;
@@ -32,18 +32,18 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Trigger Google OAuth
+// trigger Google OAuth
 router.get(
   "/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// Google OAuth callback
+// google oauth callback
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    // Successful authentication, redirect to your dashboard or any other route
+    // successful authentication, redirect to dash
     res.redirect("/dashboard");
   }
 );

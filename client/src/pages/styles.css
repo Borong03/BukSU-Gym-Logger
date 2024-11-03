@@ -155,16 +155,16 @@ p {
   color: white;
 }
 
-.registeranother {
+.signgo {
   margin-right: 0.2rem;
-  width: 20rem !important;
+  width: 15rem;
   height: 40px;
   border-radius: 138px 10px 10px 138px !important;
 }
 
-.continueto {
+.logingo {
   border-radius: 10px 138px 138px 10px !important;
-  width: 20rem !important;
+  width: 15rem;
   height: 40px;
   color: white;
 }
@@ -202,4 +202,57 @@ p {
 .table {
   margin-top: 1rem !important;
   border-radius: 44px !important;
+}
+
+.left {
+  margin-right: 0.2rem;
+  width: 10.3rem;
+  height: 40px;
+  border-radius: 138px 10px 10px 138px !important;
+}
+
+.right {
+  border-radius: 10px 138px 138px 10px !important;
+  width: 10.3rem;
+  height: 40px;
+  color: white;
+  margin-left: 0.2rem;
+}
+
+.middle {
+  border-radius: 4px 4px 4px 4px !important;
+  width: 10.3rem;
+  height: 40px;
+  color: white;
+}
+
+/* amity angelic blur */
+.modal-backdrop {
+  backdrop-filter: blur(20px);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* crossfades */
+.modal.fade .modal-dialog {
+  transform: translateY(-10%);
+  transition: all 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0);
+}
+
+.google-signin-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+  display: inline-flex; /* or block if you want it full width */
+  align-items: center; /* Center items vertically */
+}
+
+.google-signin-button:focus {
+  outline: none; /* Remove focus outline */
 }
