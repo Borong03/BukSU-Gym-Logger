@@ -53,4 +53,31 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// route to search user by email with partial matching
+router.get("/search", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    // Use a regular expression for partial email matching
+    const user = await User.findOne({
+      email: { $regex: email, $options: "i" },
+    });
+    if (user) {
+      res.json({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error searching for user" });
+  }
+});
+
 module.exports = router;

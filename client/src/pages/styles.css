@@ -256,3 +256,151 @@ p {
 .google-signin-button:focus {
   outline: none; /* Remove focus outline */
 }
+
+/* admin style */
+
+.sidebar {
+  width: 250px;
+  background-color: #f8f9fad2;
+  padding: 15px;
+  position: fixed;
+  left: -250px;
+  top: 5.1rem;
+  height: 100%;
+  transition: left 0.3s ease;
+  z-index: 1050;
+}
+
+.sidebar.show {
+  left: 0;
+}
+
+.nav-link.active {
+  background-color: #00008b;
+  color: white;
+}
+
+.nav-link {
+  margin-bottom: 1rem;
+}
+
+.content {
+  margin-top: 4rem;
+  flex-grow: 1;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+.content.sidebar-open {
+  margin-left: 250px;
+}
+
+.welcome {
+  color: white;
+  margin-top: -2rem !important;
+}
+
+.navbar {
+  padding: 0.75rem 1rem;
+  z-index: 1000;
+}
+
+.hamburger {
+  margin-right: 1rem;
+}
+
+.branding {
+  font-weight: bold;
+  font-size: medium;
+}
+
+.headertxt {
+  font-family: "ClashGrotesk-Variable" !important;
+  font-weight: 600;
+}
+
+.slogo {
+  width: 3rem;
+  height: 3rem;
+  margin-right: 0.4rem;
+}
+
+.aight {
+  position: absolute;
+  right: 1rem;
+  bottom: 8px;
+  display: block;
+}
+
+.bigimage {
+  width: 6rem;
+  height: 6rem;
+}
+
+.raise {
+  width: 3rem;
+  height: 3rem;
+}
+
+.widgets {
+  margin-top: 2rem;
+}
+
+.contentbody {
+  padding: 4rem;
+}
+
+.no-border {
+  border: none;
+}
+
+.vertibar {
+  width: 2rem !important;
+}
+
+.navpill {
+  margin-top: 2rem;
+}
+
+.pilled {
+  border-radius: 10rem !important;
+  margin-left: 1.4rem;
+  font-weight: bold;
+  width: 8rem;
+  text-align: center;
+}
+
+.inactivepill {
+  background-color: lightgrey !important;
+  margin-left: 2rem;
+  border-radius: 10rem !important;
+  color: #171717;
+  width: 8rem;
+  text-align: center;
+}
+
+.linee {
+  width: 0.125rem;
+  height: 2.3125rem;
+  background-color: white;
+  margin-left: 2rem;
+  margin-top: 2px;
+}
+
+.circlebuttonsb {
+  background-color: #0d6efd;
+  color: white;
+  margin-left: 2rem;
+}
+
+.circlebuttonsr {
+  background-color: #ea4335;
+  color: white;
+  margin-left: 2rem;
+}
+
+.circlebuttonsn {
+  background-color: #171717;
+  color: white;
+  margin-left: 2rem;
+}
