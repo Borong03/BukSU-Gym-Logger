@@ -5,6 +5,38 @@ const User = require("../models/User");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 
+const nodemailer = require("nodemailer");
+
+// Create a transporter for nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail", // or your email provider
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Route to send passkey email
+router.post("/send-passkey-email", async (req, res) => {
+  const { email } = req.body;
+
+  const link = `http://localhost:3000/create-passkey/${email}`; // Link to create passkey
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Create Your Passkey",
+    text: `Click on the following link to create your passkey: ${link}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Email sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error sending email" });
+  }
+});
+
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email } = req.body;
 

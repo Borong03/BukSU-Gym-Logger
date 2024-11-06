@@ -7,12 +7,14 @@ const IDCheck = () => {
   const [email, setEmail] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [isEmailSent, setIsEmailSent] = useState(false);
 
+  // Handle search for user
   const handleSearch = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await axios.get(`http://localhost:5000/auth/search`, {
+      const response = await axios.get("http://localhost:5000/auth/search", {
         params: { email },
       });
       setResult(response.data);
@@ -20,6 +22,22 @@ const IDCheck = () => {
     } catch (err) {
       setError(err.response?.data?.message || "Error searching for user");
       setResult(null);
+    }
+  };
+
+  // Handle sending passkey creation link
+  const handleContinue = async () => {
+    if (result) {
+      try {
+        // Ensure your backend route is correctly set up to receive this post request
+        await axios.post("http://localhost:5000/send-passkey-link", {
+          email: result.email,
+        });
+        alert("Passkey creation link sent to the user!");
+        setIsEmailSent(true);
+      } catch (err) {
+        setError(err.response?.data?.message || "Error sending email");
+      }
     }
   };
 
@@ -101,7 +119,12 @@ const IDCheck = () => {
                 >
                   Go Back
                 </button>
-                <button type="button" className="btn btn-primary gotit">
+                <button
+                  type="button"
+                  className="btn btn-primary gotit"
+                  onClick={handleContinue}
+                  disabled={!result || isEmailSent} // Disable if email sent or no result
+                >
                   Continue
                 </button>
               </div>

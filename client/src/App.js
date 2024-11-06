@@ -12,6 +12,7 @@ import Logout from "./pages/member/Logout";
 import Limit from "./pages/member/Limit";
 import IDCheck from "./pages/admin/IDCheck";
 import AdminDash from "./pages/admin/admin";
+import Passkey from "./pages/passkey";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/limit" element={<Limit />} />
         <Route path="/idcheck" element={<IDCheck />} />
         <Route path="/admindashboard" element={<AdminDash />} />
+        <Route path="/create-passkey/:email" element={<Passkey />} />
       </Routes>
     </Router>
   );
