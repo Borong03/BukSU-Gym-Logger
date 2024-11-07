@@ -8,14 +8,14 @@ const webauthnRoutes = require("./routes/webauthn");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 
-dotenv.config(); // load .env
-require("./config/passport"); // load passport config
+dotenv.config(); // load environment variables
+require("./config/passport"); // load passport configuration
 
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:3000", credentials: true })); // allow frontend requests
 
-// setup session (needed for passport sessions)
+// setup session (needed for Passport sessions)
 app.use(
   session({ secret: "your-secret", resave: false, saveUninitialized: true })
 );
@@ -27,6 +27,17 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
+
+// user schema and model
+const userSchema = new mongoose.Schema({
+  firstName: String,
+  lastName: String,
+  email: String,
+  isActive: { type: Boolean, default: true }, // Track active status
+});
+
+// avoid re-registering the User model if it already exists
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 // initialize transporter for email sending
 const transporter = nodemailer.createTransport({
@@ -55,7 +66,57 @@ const sendPasskeyLink = async (email) => {
   }
 };
 
-// in postman
+// route to get all users
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving users" });
+  }
+});
+
+// route to update user’s first or last name
+app.put("/users/update-name", async (req, res) => {
+  const { email, firstName, lastName } = req.body;
+  try {
+    const updateData = {};
+    if (firstName) updateData.firstName = firstName;
+    if (lastName) updateData.lastName = lastName;
+
+    const updatedUser = await User.findOneAndUpdate({ email }, updateData, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating user" });
+  }
+});
+
+// route to archive (deactivate) a user
+app.put("/users/archive", async (req, res) => {
+  const { email } = req.body;
+  try {
+    const archivedUser = await User.findOneAndUpdate(
+      { email },
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!archivedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User archived", user: archivedUser });
+  } catch (err) {
+    res.status(500).json({ message: "Error archiving user" });
+  }
+});
+
+// route to send a test email (for debugging)
 app.post("/test-email", async (req, res) => {
   const { email } = req.body;
 
@@ -68,7 +129,7 @@ app.post("/test-email", async (req, res) => {
   }
 });
 
-// in "production" lol
+// route to send passkey link in "production" lmaoo
 app.post("/send-passkey-link", async (req, res) => {
   try {
     const { email } = req.body;
@@ -88,10 +149,12 @@ app.post("/send-passkey-link", async (req, res) => {
   }
 });
 
-// routes
+// route
 app.use("/auth", authRoutes);
-app.use("/webauthn", webauthnRoutes); // use WebAuthn routes
+app.use("/webauthn", webauthnRoutes); // Use WebAuthn routes
 
-// server listening
+// server listening on..
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// i hate captialism (letters) >:(
