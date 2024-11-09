@@ -397,10 +397,9 @@ p {
   background-color: #ea4335;
   color: white;
   margin-left: 2rem;
+  margin-right: 2rem;
 }
 
-.circlebuttonsn {
-  background-color: #171717;
-  color: white;
-  margin-left: 2rem;
+.table {
+  margin-top: 2rem !important;
 }

@@ -5,10 +5,10 @@ const mongoose = require("mongoose");
 const UserSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
-  email: { type: String, unique: true, required: true }, // define the email field as a unique and required String
-  googleId: { type: String }, // Define the googleId field as a String, used for Google signup
-
-  // define the createdAt field as a date with a default value of the current date and time
+  email: { type: String, unique: true, required: true }, // define the email field as a unique and required string
+  googleId: { type: String }, // used for google signup
+  password: { type: String, required: true },
+  isActive: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 

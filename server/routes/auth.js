@@ -7,45 +7,24 @@ const bcrypt = require("bcrypt");
 
 const nodemailer = require("nodemailer");
 
-// Create a transporter for nodemailer
 const transporter = nodemailer.createTransport({
-  service: "gmail", // or your email provider
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
-// Route to send passkey email
-router.post("/send-passkey-email", async (req, res) => {
-  const { email } = req.body;
-
-  const link = `http://localhost:3000/create-passkey/${email}`; // Link to create passkey
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Create Your Passkey",
-    text: `Click on the following link to create your passkey: ${link}`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.json({ message: "Email sent successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error sending email" });
-  }
-});
-
 router.post("/signup", async (req, res) => {
-  const { firstName, lastName, email } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
-  // check for required fields ug institutional email ba iya gamit
-  if (!firstName || !lastName || !email) {
-    return res.status(400).json({ message: "Please fill in all fields" }); // mag error siya in postman
+  // check for required fields
+  if (!firstName || !lastName || !email || !password) {
+    return res.status(400).json({ message: "Please fill in all fields" });
   }
+
   if (!/@(student\.)?buksu\.edu\.ph$/.test(email)) {
-    return res.status(400).json({ message: "Invalid institutional email" }); // apil ni siya mu gawas as error
+    return res.status(400).json({ message: "Invalid institutional email" });
   }
 
   try {
@@ -55,12 +34,20 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // create user
-    const newUser = new User({ firstName, lastName, email });
+    // hash the password before saving it
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // create user with hashed password
+    const newUser = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword, // Save the hashed password
+    });
     await newUser.save();
     res.json({ message: "User registered successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error creating user" }); // dili siya specific na error, basta nag error ahhaha lol jk
+    res.status(500).json({ message: "Error creating user" });
   }
 });
 
@@ -76,7 +63,7 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     // successful authentication, redirect to dash
-    res.redirect("/dashboard");
+    res.redirect("/dash");
   }
 );
 
@@ -94,7 +81,7 @@ router.get("/search", async (req, res) => {
   }
 
   try {
-    // Use a regular expression for partial email matching
+    // use regular expression for partial email matching
     const user = await User.findOne({
       email: { $regex: email, $options: "i" },
     });

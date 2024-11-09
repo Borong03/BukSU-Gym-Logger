@@ -9,7 +9,7 @@ const IDCheck = () => {
   const [error, setError] = useState(null);
   const [isEmailSent, setIsEmailSent] = useState(false);
 
-  // Handle search for user
+  // handle search for user
   const handleSearch = async (e) => {
     e.preventDefault();
 
@@ -25,18 +25,27 @@ const IDCheck = () => {
     }
   };
 
-  // Handle sending passkey creation link
+  // handle activating user and sending success email
   const handleContinue = async () => {
     if (result) {
       try {
-        // Ensure your backend route is correctly set up to receive this post request
-        await axios.post("http://localhost:5000/send-passkey-link", {
+        // isActive status to true
+        await axios.put("http://localhost:5000/users/activate", {
           email: result.email,
         });
-        alert("Passkey creation link sent to the user!");
+
+        // send success email
+        await axios.post("http://localhost:5000/send-success-email", {
+          email: result.email,
+        });
+
+        alert("Yey! User has been activated!");
         setIsEmailSent(true);
       } catch (err) {
-        setError(err.response?.data?.message || "Error sending email");
+        setError(
+          err.response?.data?.message ||
+            "Whoopsie! An error has occurred. Please try again or check console."
+        );
       }
     }
   };
@@ -52,13 +61,14 @@ const IDCheck = () => {
             <div className="half">
               <img src="media/search.webp" className="idlogo" alt="ID Logo" />
               <h5>
-                <b>Passkey Generation</b>
+                <b>Activate a Member</b>
               </h5>
               <p>
                 Please enter their registered ID.
                 <br />
                 <br />
-                Only verified users can proceed with the Passkey Generation.
+                Only bonafide students, instructors, and personnel can utilize
+                the fitness gym.
               </p>
             </div>
           </div>
@@ -123,7 +133,7 @@ const IDCheck = () => {
                   type="button"
                   className="btn btn-primary gotit"
                   onClick={handleContinue}
-                  disabled={!result || isEmailSent} // Disable if email sent or no result
+                  disabled={!result || isEmailSent}
                 >
                   Continue
                 </button>

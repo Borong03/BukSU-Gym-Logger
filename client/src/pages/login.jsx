@@ -3,14 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import "./styles.css";
 
-const Signup = () => {
+const Login = () => {
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [emailError, setEmailError] = useState("");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -18,6 +16,7 @@ const Signup = () => {
     const emailValue = e.target.value;
     setEmail(emailValue);
 
+    // match only @student.buksu.edu.ph or @buksu.edu.ph emails
     const emailPattern =
       /^[a-zA-Z0-9._%+-]+@(student\.buksu\.edu\.ph|buksu\.edu\.ph)$/;
 
@@ -30,27 +29,27 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (emailError) {
-      alert("Please use a valid BukSU email.");
+    if (emailError || !email || !password) {
+      alert("Please fill in all fields correctly.");
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/signup`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, password }),
+        body: JSON.stringify({ email, password }),
         credentials: "include",
       });
 
       if (response.ok) {
-        navigate("/success");
+        navigate("/success"); // redirect to success page after login
       } else {
         const data = await response.json();
-        alert(data.message || "Signup failed, please try again.");
+        alert(data.message || "Login failed, please try again.");
       }
     } catch (error) {
-      console.error("Error during signup:", error);
+      console.error("Error during login:", error);
       alert("An error occurred. Please try again.");
     }
   };
@@ -72,9 +71,8 @@ const Signup = () => {
             <div className="half">
               <img src="/media/write.webp" className="idlogo" alt="ID Logo" />
               <h5>
-                <b>Register for free!</b>
+                <b>Login to the BukSU Fitness Gym</b>
               </h5>
-              <p>Signup using your BukSU email to enjoy your fitness perks!</p>
             </div>
           </div>
           <div className="col light-background">
@@ -98,37 +96,6 @@ const Signup = () => {
               </button>
 
               <form onSubmit={handleSubmit}>
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="form-floating mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="floatingFirstName"
-                        placeholder="John"
-                        required
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                      />
-                      <label htmlFor="floatingFirstName">First Name</label>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="form-floating mb-3">
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="floatingLastName"
-                        placeholder="Doe"
-                        required
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                      />
-                      <label htmlFor="floatingLastName">Last Name</label>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="form-floating mb-3">
                   <input
                     type="email"
@@ -169,10 +136,9 @@ const Signup = () => {
                     className="form-check-label"
                     htmlFor="flexCheckDefault"
                   >
-                    I have read the
+                    I have read the{" "}
                     <b
                       className="text-primary"
-                      style={{ cursor: "pointer" }}
                       onClick={() => setShowTerms(true)}
                     >
                       Terms & Conditions
@@ -180,9 +146,9 @@ const Signup = () => {
                     and
                     <b
                       className="text-primary"
-                      style={{ cursor: "pointer" }}
                       onClick={() => setShowPrivacy(true)}
                     >
+                      {" "}
                       BukSU Data Collection & Privacy
                     </b>
                   </label>
@@ -193,7 +159,7 @@ const Signup = () => {
                     Go Back
                   </button>
                   <button type="submit" className="btn btn-primary gotit">
-                    Continue
+                    Login
                   </button>
                 </div>
               </form>
@@ -202,13 +168,13 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* terms modal */}
+      {/* Terms and Privacy Modals */}
       <Modal show={showTerms} onHide={() => setShowTerms(false)} centered>
         <Modal.Header>
           <Modal.Title>Terms & Conditions</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>tbd</p>
+          <p>to be discussed...</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowTerms(false)}>
@@ -216,7 +182,7 @@ const Signup = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* privacy modal */}
+
       <Modal show={showPrivacy} onHide={() => setShowPrivacy(false)} centered>
         <Modal.Header>
           <Modal.Title>BukSU Data Collection & Privacy</Modal.Title>
@@ -224,8 +190,7 @@ const Signup = () => {
         <Modal.Body>
           <p>
             In compliance with the <b>Data Privacy Act of 2012</b>, BukSU
-            Fitness Gym - Digital Logging System is committed to protect and
-            respect your personal data privacy.
+            Fitness Gym is committed to protecting your data privacy.
           </p>
         </Modal.Body>
         <Modal.Footer>
@@ -238,4 +203,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Login;
