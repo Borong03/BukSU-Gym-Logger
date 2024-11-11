@@ -8,6 +8,7 @@ const Signup = () => {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -17,7 +18,6 @@ const Signup = () => {
     const emailValue = e.target.value;
     setEmail(emailValue);
 
-    // RegEx to match only @student.buksu.edu.ph or @buksu.edu.ph emails
     const emailPattern =
       /^[a-zA-Z0-9._%+-]+@(student\.buksu\.edu\.ph|buksu\.edu\.ph)$/;
 
@@ -36,10 +36,10 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/auth/signup`, {
+      const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email }),
+        body: JSON.stringify({ firstName, lastName, email, password }),
         credentials: "include",
       });
 
@@ -145,6 +145,19 @@ const Signup = () => {
                   )}
                 </div>
 
+                <div className="form-floating">
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="floatingPassword"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="floatingPassword">Password</label>
+                </div>
+
                 <div className="form-check">
                   <input
                     className="form-check-input"
@@ -195,7 +208,7 @@ const Signup = () => {
           <Modal.Title>Terms & Conditions</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Here you can write your Terms & Conditions...</p>
+          <p>tbd</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowTerms(false)}>

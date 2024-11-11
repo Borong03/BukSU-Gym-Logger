@@ -24,7 +24,7 @@ const Home = () => {
           Most Visits
         </button>
         <button
-          onClick={() => navigate("/fingerprint")}
+          onClick={() => navigate("/login")}
           type="button"
           className="gogo btn btn-success"
         >
