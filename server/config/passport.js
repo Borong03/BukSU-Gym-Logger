@@ -29,7 +29,7 @@ passport.use(
   )
 );
 
-passport.authenticate("google", { scope: ["profile", "email"] });
+
 
 passport.serializeUser((user, done) => {
   done(null, user.id);

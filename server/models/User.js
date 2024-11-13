@@ -7,8 +7,8 @@ const UserSchema = new mongoose.Schema({
   lastName: { type: String },
   email: { type: String, unique: true, required: true }, // define the email field as a unique and required string
   googleId: { type: String }, // used for google signup
-  password: { type: String, required: true },
-  isActive: { type: Boolean, default: false },
+  password: { type: String, required: false },
+  isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
 });
 

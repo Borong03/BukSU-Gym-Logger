@@ -15,6 +15,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+
+
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
@@ -60,16 +62,16 @@ router.get(
 // google oauth callback
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+  passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    // successful authentication, redirect to dash
-    res.redirect("/dash");
+    try {
+      // Redirect to the dashboard 
+      res.redirect("/dash");
+    } catch (error) {
+      console.error("Error in Google OAuth callback:", error);
+      res.status(500).json({ message: "Authentication failed. Please try again." });
+    }
   }
-);
-
-router.get(
-  "/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 // route to search user by email with partial matching
