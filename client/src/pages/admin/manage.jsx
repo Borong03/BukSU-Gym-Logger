@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Ensure you have this imported
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import DataTable from "react-data-table-component";
 import "../styles.css";
 
 const ManageMembers = () => {
@@ -16,8 +17,8 @@ const ManageMembers = () => {
 
         const formattedData = data.map((member) => ({
           ...member,
-          userId: member.email.split("@")[0], // extract ID from email before the @ sign
-          signupMethod: member.googleId ? "Continue with Google" : "Manual", // signup method based on googleId presence
+          userId: member.email.split("@")[0],
+          signupMethod: member.googleId ? "Continue with Google" : "Manual",
         }));
 
         setMembers(formattedData);
@@ -32,6 +33,45 @@ const ManageMembers = () => {
   const handleUpdateClick = (member) => {
     navigate("/update", { state: { user: member } });
   };
+
+  // Define columns for DataTable
+  const columns = [
+    {
+      name: "Name",
+      selector: (row) => `${row.firstName} ${row.lastName}`,
+      sortable: true,
+    },
+    {
+      name: "ID",
+      selector: (row) => row.userId,
+      sortable: true,
+    },
+    {
+      name: "Signup Method",
+      selector: (row) => row.signupMethod,
+      sortable: true,
+    },
+    {
+      name: "Options",
+      cell: (row) => (
+        <>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => handleUpdateClick(row)}
+          >
+            Update Details
+          </button>
+          <button type="button" className="btn btn-danger">
+            Archive Member
+          </button>
+        </>
+      ),
+      ignoreRowClick: true,
+      allowOverflow: true,
+      button: true,
+    },
+  ];
 
   return (
     <div className="d-flex">
@@ -152,44 +192,14 @@ const ManageMembers = () => {
             </li>
           </ul>
 
-          <table className="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>
-                  <input type="checkbox" />
-                </th>
-                <th>Name</th>
-                <th>ID</th>
-                <th>Signup Method</th>
-                <th>Options</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => (
-                <tr key={member._id}>
-                  <td>
-                    <input type="checkbox" />
-                  </td>
-                  <td>{`${member.firstName} ${member.lastName}`}</td>
-                  <td>{member.userId}</td>
-                  <td>{member.signupMethod}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={() => handleUpdateClick(member)}
-                    >
-                      Update Details
-                    </button>
-
-                    <button type="button" className="btn btn-danger">
-                      Archive Member
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* DataTable component */}
+          <DataTable
+            columns={columns}
+            data={members}
+            pagination
+            highlightOnHover
+            selectableRows
+          />
         </div>
       </div>
     </div>

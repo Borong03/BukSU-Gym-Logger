@@ -1,6 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("../models/User"); // Adjust path if needed
+const LocalStrategy = require("passport-local").Strategy;
+const User = require("../models/User");
 
 passport.use(
   new GoogleStrategy(
@@ -21,6 +22,7 @@ passport.use(
           firstName: profile.name.givenName,
           lastName: profile.name.familyName,
           email: profile.emails[0].value,
+          password: "", // not required coz its google duuh
         });
         await newUser.save();
         return done(null, newUser);
@@ -29,8 +31,12 @@ passport.use(
   )
 );
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 
+// ensure that we can check user info after successful login
 passport.serializeUser((user, done) => {
   done(null, user.id);
 });

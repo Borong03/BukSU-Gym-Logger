@@ -7,11 +7,67 @@ const authRoutes = require("./routes/auth");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const User = require('./models/User');
+const app = express();
+
+// initialize transporter for email sending
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_SENDER,
+    pass: process.env.APP_PASSWORD,
+  },
+});
+
+// user schema and model
+const userSchema = new mongoose.Schema({
+  firstName: String,
+  lastName: String,
+  email: String,
+  password: { type: String, required: true },
+  isActive: { type: Boolean, default: false }, // track active status
+  isAdmin: { type: Boolean, default: false },
+});
+
+// middleware to check if user is an admin
+const requireAdmin = async (req, res, next) => {
+  if (req.isAuthenticated()) {
+    try {
+      const user = await User.findById(req.user._id); // retrieve user by ID stored in session
+      if (user && user.isAdmin) {
+        return next(); // ok admin, proceed to the route
+      }
+      return res.status(403).json({ message: "Not Allowed. Admins only." });
+    } catch (err) {
+      return res.status(500).json({ message: "Error fetching user data" });
+    }
+  } else {
+    return res.status(401).json({ message: "Please log in to access this page" });
+  }
+};
 
 dotenv.config(); // load environment variables
 require("./config/passport"); // load passport configuration
 
-const app = express();
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log(err));
+
+app.post("/login", async (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return res.redirect("/"); // Redirect to login page if authentication fails
+
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      // Redirect to frontend with user's first name in the query string
+      res.redirect(`http://localhost:3000/dash?name=${user.firstName}`);
+    });
+  })(req, res, next);
+});
+
 app.use(express.json());
 app.use(
   cors({
@@ -27,31 +83,21 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+app.use(
+  session({
+    secret: "your-secret",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // set to true kung production
+  })
+);
 
-// user schema and model
-const userSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  email: String,
-  password: { type: String, required: true },
-  isActive: { type: Boolean, default: false }, // track active status
-});
+app.use(passport.initialize());
+app.use(passport.session());
 
-// avoid re-registering the User model if it already exists
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-
-// initialize transporter for email sending
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_SENDER,
-    pass: process.env.APP_PASSWORD,
-  },
+// use this middleware for routes that require admin access
+app.get("/admin", requireAdmin, (req, res) => {
+  res.send("Welcome to the admin dashboard");
 });
 
 // route to activate a user

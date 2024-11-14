@@ -1,9 +1,13 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/styles.css";
 
 const Dash = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const queryParams = new URLSearchParams(location.search);
+  const firstName = queryParams.get("name") || "User";
 
   return (
     <div
@@ -16,12 +20,12 @@ const Dash = () => {
             <div className="successcard">
               <img src="media/hello.webp" className="done" alt="Done" />
               <h5 className="card-title">
-                <b>Hello, $NamePlaceholder!</b>
+                <b>Hello, {firstName}!</b>
               </h5>
               <p className="card-text">
-                Your time in has been logged. <br></br>
-                %nth out of 3 visits per week has been used.<br></br>
-                <br></br>
+                Your time in has been logged. <br />
+                %nth out of 3 visits per week has been used.<br />
+                <br />
                 You can now click <b>Log another user</b> and enjoy the Fitness
                 Gym amenities.
               </p>

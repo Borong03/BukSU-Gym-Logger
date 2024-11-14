@@ -14,6 +14,7 @@ import IDCheck from "./pages/admin/IDCheck";
 import AdminDash from "./pages/admin/admin";
 import Manage from "./pages/admin/manage";
 import Update from "./pages/admin/update";
+import Admin from "./pages/admin/admin";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/admindashboard" element={<AdminDash />} />
         <Route path="/manage" element={<Manage />} />
         <Route path="/update" element={<Update />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>
   );
