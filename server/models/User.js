@@ -8,11 +8,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true }, // define the email field as a unique and required string
   googleId: { type: String }, // used for google signup
   password: { type: String, required: false },
-<<<<<<< Updated upstream
-  isActive: { type: Boolean, default: true },
-=======
   isActive: { type: Boolean, default: false },
->>>>>>> Stashed changes
   createdAt: { type: Date, default: Date.now },
   isAdmin: { type: Boolean, default: false }, // only admins can enter
 });

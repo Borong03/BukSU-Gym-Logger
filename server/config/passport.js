@@ -31,11 +31,6 @@ passport.use(
   )
 );
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
-
 // ensure that we can check user info after successful login
 passport.serializeUser((user, done) => {
   done(null, user.id);

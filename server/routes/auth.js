@@ -15,9 +15,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-<<<<<<< Updated upstream
-
-=======
 // login auth
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -45,7 +42,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "An error occurred during login" });
   }
 });
->>>>>>> Stashed changes
 
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
@@ -94,18 +90,8 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-<<<<<<< Updated upstream
-    try {
-      // Redirect to the dashboard 
-      res.redirect("/dash");
-    } catch (error) {
-      console.error("Error in Google OAuth callback:", error);
-      res.status(500).json({ message: "Authentication failed. Please try again." });
-    }
-=======
     // redirect to the frontend with the user's first name
     res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}`);
->>>>>>> Stashed changes
   }
 );
 
