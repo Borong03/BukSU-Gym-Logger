@@ -2,8 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import DataTable from "react-data-table-component";
 import "../styles.css";
+// kani senj, data table.
+// copy paste lang ni
+import DataTable from "datatables.net-dt";
+import "datatables.net-dt/css/dataTables.dataTables.css";
 
 const ManageMembers = () => {
   const [members, setMembers] = useState([]);
@@ -30,48 +33,16 @@ const ManageMembers = () => {
     fetchMembers();
   }, []);
 
+  // init data
+  useEffect(() => {
+    if (members.length > 0) {
+      new DataTable("#myTable");
+    }
+  }, [members]);
+
   const handleUpdateClick = (member) => {
     navigate("/update", { state: { user: member } });
   };
-
-  // Define columns for DataTable
-  const columns = [
-    {
-      name: "Name",
-      selector: (row) => `${row.firstName} ${row.lastName}`,
-      sortable: true,
-    },
-    {
-      name: "ID",
-      selector: (row) => row.userId,
-      sortable: true,
-    },
-    {
-      name: "Signup Method",
-      selector: (row) => row.signupMethod,
-      sortable: true,
-    },
-    {
-      name: "Options",
-      cell: (row) => (
-        <>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => handleUpdateClick(row)}
-          >
-            Update Details
-          </button>
-          <button type="button" className="btn btn-danger">
-            Archive Member
-          </button>
-        </>
-      ),
-      ignoreRowClick: true,
-      allowOverflow: true,
-      button: true,
-    },
-  ];
 
   return (
     <div className="d-flex">
@@ -192,14 +163,44 @@ const ManageMembers = () => {
             </li>
           </ul>
 
-          {/* DataTable component */}
-          <DataTable
-            columns={columns}
-            data={members}
-            pagination
-            highlightOnHover
-            selectableRows
-          />
+          <table className="table table-striped table-hover" id="myTable"> {/* kaning id senj, copy ranis table gihapon sa pikas, thankies :3 */}
+            <thead>
+              <tr>
+                <th>
+                  <input type="checkbox" />
+                </th>
+                <th>Name</th>
+                <th>ID</th>
+                <th>Signup Method</th>
+                <th>Options</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => (
+                <tr key={member._id}>
+                  <td>
+                    <input type="checkbox" />
+                  </td>
+                  <td>{`${member.firstName} ${member.lastName}`}</td>
+                  <td>{member.userId}</td>
+                  <td>{member.signupMethod}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => handleUpdateClick(member)}
+                    >
+                      Update Details
+                    </button>
+
+                    <button type="button" className="btn btn-danger">
+                      Archive Member
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
