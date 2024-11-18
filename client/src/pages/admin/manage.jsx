@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Ensure you have this imported
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "../styles.css";
+// kani senj, data table.
+// copy paste lang ni
+import DataTable from "datatables.net-dt";
+import "datatables.net-dt/css/dataTables.dataTables.css";
 
 const ManageMembers = () => {
   const [members, setMembers] = useState([]);
@@ -16,8 +20,8 @@ const ManageMembers = () => {
 
         const formattedData = data.map((member) => ({
           ...member,
-          userId: member.email.split("@")[0], // extract ID from email before the @ sign
-          signupMethod: member.googleId ? "Continue with Google" : "Manual", // signup method based on googleId presence
+          userId: member.email.split("@")[0],
+          signupMethod: member.googleId ? "Continue with Google" : "Manual",
         }));
 
         setMembers(formattedData);
@@ -28,6 +32,13 @@ const ManageMembers = () => {
 
     fetchMembers();
   }, []);
+
+  // init data
+  useEffect(() => {
+    if (members.length > 0) {
+      new DataTable("#myTable");
+    }
+  }, [members]);
 
   const handleUpdateClick = (member) => {
     navigate("/update", { state: { user: member } });
@@ -152,7 +163,7 @@ const ManageMembers = () => {
             </li>
           </ul>
 
-          <table className="table table-striped table-hover">
+          <table className="table table-striped table-hover" id="myTable"> {/* kaning id senj, copy ranis table gihapon sa pikas, thankies :3 */}
             <thead>
               <tr>
                 <th>

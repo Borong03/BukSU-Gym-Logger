@@ -33,32 +33,35 @@ const Login = () => {
       alert("Please fill in all fields correctly.");
       return;
     }
-
+  
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: "include",
       });
-
+  
+      const data = await response.json();
       if (response.ok) {
-        navigate("/success"); // redirect to success page after login
+        const firstName = data.firstName;
+        const userId = data.userId; // retrieve userId
+        if (data.isAdmin) {
+          navigate(`/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`);
+        } else {
+          navigate(`/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`); // pass userId to dash
+        }
       } else {
-        const data = await response.json();
         alert(data.message || "Login failed, please try again.");
       }
     } catch (error) {
       console.error("Error during login:", error);
       alert("An error occurred. Please try again.");
     }
-  };
+  };  
 
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
-
-  const goBack = () => navigate(-1);
 
   return (
     <div
@@ -71,7 +74,7 @@ const Login = () => {
             <div className="half">
               <img src="/media/write.webp" className="idlogo" alt="ID Logo" />
               <h5>
-                <b>Login to the BukSU Fitness Gym</b>
+                <b>Login to the <br></br> BukSU Fitness Gym</b>
               </h5>
             </div>
           </div>
@@ -155,8 +158,8 @@ const Login = () => {
                 </div>
 
                 <div className="reqbuttons">
-                  <button onClick={goBack} className="btn btn-dark backback">
-                    Go Back
+                  <button onClick={() => navigate("/signup")} className="btn btn-dark backback">
+                    Signup
                   </button>
                   <button type="submit" className="btn btn-primary gotit">
                     Login

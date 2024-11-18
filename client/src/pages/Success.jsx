@@ -34,7 +34,7 @@ const Success = () => {
                   Register another User
                 </button>
                 <button
-                  onClick={() => navigate("/fingerprint")}
+                  onClick={() => navigate("/login")}
                   className="btn btn-primary logingo"
                 >
                   Continue to Login
