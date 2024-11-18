@@ -58,7 +58,7 @@ const Dash = () => {
 
               <div className="reqbuttons">
                 <button
-                  onClick={() => navigate("/history")}
+                  onClick={() => navigate(`/history?userId=${userId}`)} 
                   className="btn btn-primary left"
                 >
                   View Visit History

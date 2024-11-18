@@ -128,9 +128,26 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    // Redirect to the frontend with the user's first name and userId
-    res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`);
+  async (req, res) => {
+    // aafter successful authentication, record the login time
+
+    const userId = req.user._id;
+
+    try {
+      // create new LoginHistory document to log the user's login time
+      const newLoginHistory = new LoginHistory({
+        userId: userId,
+        loginTime: new Date(),
+      });
+
+      await newLoginHistory.save(); // save the login history to the database
+
+      // redirect to the frontend with the user's first name and userId
+      res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`);
+    } catch (error) {
+      console.error("Error saving login history:", error);
+      res.status(500).json({ message: "An error occurred while saving login history" });
+    }
   }
 );
 

@@ -14,6 +14,8 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const User = require('./models/User');
 const app = express();
+const LoginHistory = require('./models/LoginHistory');
+const historyRoutes = require("./routes/history");
 
 // initialize transporter for email sending
 const transporter = nodemailer.createTransport({
@@ -216,6 +218,7 @@ app.put("/users/archive", async (req, res) => {
 
 // route
 app.use("/auth", authRoutes);
+app.use("/api", historyRoutes);
 
 // server listening on..
 const PORT = process.env.PORT || 5000;
