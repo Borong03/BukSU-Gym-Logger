@@ -1,3 +1,8 @@
+// sorry if the code is messy lol
+// will refractor it soon ;)
+
+// made with love my Ctrl+Alt+Del
+
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -55,18 +60,19 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-app.post("/login", async (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
-    if (err) return next(err);
-    if (!user) return res.redirect("/"); // Redirect to login page if authentication fails
-
-    req.logIn(user, (err) => {
+  app.post("/login", async (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
-      // Redirect to frontend with user's first name in the query string
-      res.redirect(`http://localhost:3000/dash?name=${user.firstName}`);
-    });
-  })(req, res, next);
-});
+      if (!user) return res.redirect("/"); // back to login if failed
+  
+      req.logIn(user, (err) => {
+        if (err) return next(err);
+        // convert objectId to string
+        res.redirect(`http://localhost:3000/dash?name=${encodeURIComponent(user.firstName)}&userId=${user._id.toString()}`);
+      });
+    })(req, res, next);
+  });
+  
 
 app.use(express.json());
 app.use(
@@ -119,6 +125,7 @@ app.put("/users/activate", async (req, res) => {
   }
 });
 
+// signup
 app.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 

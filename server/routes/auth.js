@@ -6,6 +6,7 @@ const User = require("../models/User");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
+const LoginHistory = require("../models/LoginHistory");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -27,15 +28,25 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: "Incorrect password" });
     if (!user.isActive) return res.status(403).json({ message: "User account is not active" });
 
-    // Generate a token
+    // record login history
+    const loginHistory = new LoginHistory({
+      userId: user._id,
+      ipAddress: req.ip,
+      device: req.get("User-Agent"), // get device info
+    });
+
+    await loginHistory.save(); // save login history to the database
+
+    // generate a token
     const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, jwtSecret, { expiresIn: "1h" });
 
-    // Respond with token, admin status, and first name
+    // respond with token, admin status, and first name
     res.status(200).json({
       message: "Login successful",
       token,
       isAdmin: user.isAdmin,
-      firstName: user.firstName, // Include first name here
+      firstName: user.firstName,
+      userId: user._id.toString(),
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -43,6 +54,34 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// logout auth
+router.post("/logout", async (req, res) => {
+  const { userId } = req.body; // get userId from request body (importat)
+
+  try {
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // search for the most recent login history entry for this user
+    const lastLogin = await LoginHistory.findOne({ userId }).sort({ loginTime: -1 });
+
+    if (!lastLogin) {
+      return res.status(404).json({ message: "No login history found for this user" });
+    }
+
+    // update the logoutTime for the last login record
+    lastLogin.logoutTime = new Date();
+    await lastLogin.save();
+
+    res.status(200).json({ message: "Logout time recorded successfully" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "An error occurred during logout" });
+  }
+});
+
+// signup auth
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
@@ -90,8 +129,8 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    // redirect to the frontend with the user's first name
-    res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}`);
+    // Redirect to the frontend with the user's first name and userId
+    res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`);
   }
 );
 

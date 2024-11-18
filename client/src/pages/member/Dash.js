@@ -5,9 +5,34 @@ import "../../styles/styles.css";
 const Dash = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
+  // extract query params from url
   const queryParams = new URLSearchParams(location.search);
   const firstName = queryParams.get("name") || "User";
+  const userId = queryParams.get("userId"); 
+
+  const handleLogout = async () => {
+    const userId = new URLSearchParams(location.search).get("userId");
+  
+    try {
+      const response = await fetch("http://localhost:5000/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }), // send userId
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message); // show success message
+        navigate("/login"); // redirect to login page after logout
+      } else {
+        alert(data.message || "Logout failed, please try again.");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("An error occurred during logout.");
+    }
+  };  
 
   return (
     <div
@@ -23,6 +48,7 @@ const Dash = () => {
                 <b>Hello, {firstName}!</b>
               </h5>
               <p className="card-text">
+                Your user ID is: <b>{userId}</b> <br />
                 Your time in has been logged. <br />
                 %nth out of 3 visits per week has been used.<br />
                 <br />
@@ -38,13 +64,13 @@ const Dash = () => {
                   View Visit History
                 </button>
                 <button
-                  onClick={() => navigate("/fingerprint")}
+                  onClick={() => navigate("/login")}
                   className="btn btn-dark middle"
                 >
                   Log another User
                 </button>
                 <button
-                  onClick={() => navigate("/logout")}
+                  onClick={handleLogout}
                   className="btn btn-danger right"
                 >
                   Log out

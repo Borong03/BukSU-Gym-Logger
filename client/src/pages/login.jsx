@@ -43,15 +43,16 @@ const Login = () => {
   
       const data = await response.json();
       if (response.ok) {
-        const firstName = data.firstName; // Retrieve first name from response
+        const firstName = data.firstName;
+        const userId = data.userId; // retrieve userId
         if (data.isAdmin) {
-          navigate(`/admin?name=${encodeURIComponent(firstName)}`);
+          navigate(`/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`);
         } else {
-          navigate(`/dash?name=${encodeURIComponent(firstName)}`); // Pass firstName to dash
+          navigate(`/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`); // pass userId to dash
         }
       } else {
         alert(data.message || "Login failed, please try again.");
-      }      
+      }
     } catch (error) {
       console.error("Error during login:", error);
       alert("An error occurred. Please try again.");
