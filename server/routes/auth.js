@@ -7,13 +7,66 @@ const passport = require("passport");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const LoginHistory = require("../models/LoginHistory");
+const cron = require("node-cron");
+
+// schedule a cleanup job to run every hour
+cron.schedule("0 * * * *", async () => {
+  console.log("Running scheduled cleanup task...");
+  try {
+    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+    const staleLogins = await LoginHistory.find({
+      logoutTime: null,
+      loginTime: { $lt: fiveHoursAgo },
+    });
+
+    for (const login of staleLogins) {
+      // update the logoutTime to 5 hours after loginTime
+      login.logoutTime = new Date(login.loginTime.getTime() + 5 * 60 * 60 * 1000);
+      await login.save();
+    }
+
+    console.log(`${staleLogins.length} stale logins updated.`);
+  } catch (error) {
+    console.error("Error during cleanup task:", error);
+  }
+});
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.APP_PASSWORD,
   },
+});
+
+const checkLoginDuration = async (req, res, next) => {
+  try {
+    const userId = req.user._id; 
+    const lastLogin = await LoginHistory.findOne({ userId, logoutTime: null }).sort({ loginTime: -1 });
+
+    if (lastLogin) {
+      const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+      if (lastLogin.loginTime < fiveHoursAgo) {
+        // force logout by updating the record
+        lastLogin.logoutTime = new Date(lastLogin.loginTime.getTime() + 5 * 60 * 60 * 1000);
+        await lastLogin.save();
+
+        return res.status(403).json({
+          message: "Session expired due to prolonged inactivity. Please log in again.",
+        });
+      }
+    }
+
+    next(); // proceed if login is still valid
+  } catch (error) {
+    console.error("Error checking login duration:", error);
+    res.status(500).json({ message: "An error occurred while validating session." });
+  }
+};
+
+// middleware for protected routes
+router.get("/protected-route", checkLoginDuration, (req, res) => {
+  res.send("You have access to this protected route!");
 });
 
 // login auth
@@ -29,18 +82,29 @@ router.post("/login", async (req, res) => {
     if (!user.isActive) return res.status(403).json({ message: "User account is not active" });
 
     // record login history
+    const lastLogin = await LoginHistory.findOne({ userId: user._id, logoutTime: null }).sort({ loginTime: -1 });
+
+    if (lastLogin) {
+      const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+      if (lastLogin.loginTime < fiveHoursAgo) {
+        lastLogin.logoutTime = new Date(lastLogin.loginTime.getTime() + 5 * 60 * 60 * 1000);
+        await lastLogin.save();
+      } else {
+        return res.status(400).json({ message: "User already logged in. Please log out first." });
+      }
+    }
+
+    // record a new login entry
     const loginHistory = new LoginHistory({
       userId: user._id,
       ipAddress: req.ip,
-      device: req.get("User-Agent"), // get device info
+      device: req.get("User-Agent"),
     });
 
-    await loginHistory.save(); // save login history to the database
+    await loginHistory.save();
 
-    // generate a token
+    // generate a token and respond
     const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, jwtSecret, { expiresIn: "1h" });
-
-    // respond with token, admin status, and first name
     res.status(200).json({
       message: "Login successful",
       token,
@@ -129,18 +193,26 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   async (req, res) => {
-    // aafter successful authentication, record the login time
-
     const userId = req.user._id;
 
     try {
-      // create new LoginHistory document to log the user's login time
-      const newLoginHistory = new LoginHistory({
+      // check for existing active session
+      const existingSession = await LoginHistory.findOne({
         userId: userId,
-        loginTime: new Date(),
+        logoutTime: null, // Open session
       });
 
-      await newLoginHistory.save(); // save the login history to the database
+      if (!existingSession) {
+        // if no open session exists, create a new login record
+        const newLoginHistory = new LoginHistory({
+          userId: userId,
+          loginTime: new Date(), 
+          ipAddress: req.ip,
+          device: req.get("User-Agent"),
+        });
+
+        await newLoginHistory.save();
+      }
 
       // redirect to the frontend with the user's first name and userId
       res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`);
