@@ -5,7 +5,6 @@ const jwtSecret = process.env.JWT_SECRET || "4ureyes0nly";
 const User = require("../models/User");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
 const LoginHistory = require("../models/LoginHistory");
 
 const checkLoginDuration = async (req, res, next) => {
@@ -48,29 +47,37 @@ router.post("/login", async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // verify password
-    if (!user.password || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ message: "Incorrect credentials" });
-    }
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid credentials" });
 
     // check if the user's account is activated by admin
     if (!user.isActive) return res.status(403).json({ message: "User account is not active" });
 
-    // check for an active session
-    const activeSession = await LoginHistory.findOne({ userId: user._id, logoutTime: null }).sort({ loginTime: -1 });
+    // check visits in the last 7 days
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const visitCount = await LoginHistory.countDocuments({
+      userId: user._id,
+      loginTime: { $gte: oneWeekAgo }, // Only visits within the last 7 days
+    });
 
-    // if an active session exists, do not record a new login entry
-    if (!activeSession) {
-      await LoginHistory.create({
-        userId: user._id,
-        ipAddress: req.ip,
-        device: req.get("User-Agent"),
+    // redirect if the user has exceeded the visit limit
+    if (visitCount >= 3) {
+      return res.status(429).json({
+        message: "Weekly visit limit reached.",
+        userId: user._id.toString(),
       });
     }
 
-    // generate a JWT token (beta)
+    // log the visit only if the user has not exceeded the limit
+    await LoginHistory.create({
+      userId: user._id,
+      ipAddress: req.ip,
+      device: req.get("User-Agent"),
+    });
+
+    // generate JWT token
     const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, jwtSecret, { expiresIn: "1h" });
 
-    // respond with the token and user information
     return res.status(200).json({
       message: "Login successful",
       token,
@@ -83,6 +90,31 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ message: "An error occurred during login" });
   }
 });
+
+router.get("/visits/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+
+  try {
+    const now = new Date();
+    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // start of week
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const visitCount = await LoginHistory.countDocuments({
+      userId,
+      loginTime: { $gte: startOfWeek }, // visits in the current week
+    });
+
+    res.json({ visits: visitCount });
+  } catch (error) {
+    console.error("Error fetching visit count:", error);
+    res.status(500).json({ message: "Error fetching visit count" });
+  }
+});
+
 
 // logout auth
 router.post("/logout", async (req, res) => {
@@ -154,7 +186,6 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// google oauth callback
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
@@ -162,29 +193,40 @@ router.get(
     const userId = req.user._id;
 
     try {
-      // check for existing active session
+      // Check visits in the last 7 days
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const visitCount = await LoginHistory.countDocuments({
+        userId,
+        loginTime: { $gte: oneWeekAgo }, // Only visits within the last 7 days
+      });
+
+      // Redirect if the user has exceeded the visit limit
+      if (visitCount >= 3) {
+        return res.redirect(`http://localhost:3000/limit?userId=${userId}`);
+      }
+
+      // Log the visit if the user is under the limit
       const existingSession = await LoginHistory.findOne({
-        userId: userId,
+        userId,
         logoutTime: null, // Open session
       });
 
       if (!existingSession) {
-        // if no open session exists, create a new login record
-        const newLoginHistory = new LoginHistory({
-          userId: userId,
-          loginTime: new Date(), 
+        await LoginHistory.create({
+          userId,
+          loginTime: new Date(),
           ipAddress: req.ip,
           device: req.get("User-Agent"),
         });
-
-        await newLoginHistory.save();
       }
 
-      // redirect to the frontend with the user's first name and userId
-      res.redirect(`http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`);
+      // redirect to dash with the user's first name and userId
+      res.redirect(
+        `http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`
+      );
     } catch (error) {
-      console.error("Error saving login history:", error);
-      res.status(500).json({ message: "An error occurred while saving login history" });
+      console.error("Error during Google callback:", error);
+      res.status(500).json({ message: "An error occurred during login." });
     }
   }
 );

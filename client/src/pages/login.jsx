@@ -42,14 +42,23 @@ const Login = () => {
       });
   
       const data = await response.json();
+      if (response.status === 429) {
+        alert(data.message); // inform the user that they've hit the limit
+        navigate(`/limit?userId=${data.userId}`);
+        return; // prevent further execution
+      }
       if (response.ok) {
         const firstName = data.firstName;
-        const userId = data.userId; // retrieve userId
+        const userId = data.userId;
         if (data.isAdmin) {
           navigate(`/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`);
         } else {
-          navigate(`/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`); // pass userId to dash
+          navigate(`/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`);
         }
+      } else if (response.status === 429) {
+        // Pass userId to the /limit page
+        const userId = data.userId; // Ensure userId is retrieved from the server response
+        navigate(`/limit?userId=${userId}`);
       } else {
         alert(data.message || "Login failed, please try again.");
       }
@@ -57,8 +66,8 @@ const Login = () => {
       console.error("Error during login:", error);
       alert("An error occurred. Please try again.");
     }
-  };  
-
+  };
+  
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
