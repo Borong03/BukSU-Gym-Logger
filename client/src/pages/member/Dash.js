@@ -11,6 +11,11 @@ const Dash = () => {
   const firstName = queryParams.get("name") || "User";
   const userId = queryParams.get("userId"); 
 
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+  }
+
   const handleLogout = async () => {
     const userId = new URLSearchParams(location.search).get("userId");
   

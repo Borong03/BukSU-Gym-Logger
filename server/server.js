@@ -9,7 +9,6 @@ const dotenv = require("dotenv");
 const passport = require("passport");
 const session = require("express-session");
 const authRoutes = require("./routes/auth");
-const nodemailer = require("nodemailer");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const User = require('./models/User');
@@ -17,15 +16,7 @@ const app = express();
 const LoginHistory = require('./models/LoginHistory');
 const historyRoutes = require("./routes/history");
 const captchaRoutes = require('./routes/captchaRoutes');
-
-// initialize transporter for email sending
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_SENDER,
-    pass: process.env.APP_PASSWORD,
-  },
-});
+const emailServiceRoutes = require("./routes/emailService");
 
 // user schema and model
 const userSchema = new mongoose.Schema({
@@ -56,6 +47,7 @@ const requireAdmin = async (req, res, next) => {
 
 dotenv.config(); // load environment variables
 require("./config/passport"); // load passport configuration
+require("./utils/cleanup");
 
 // MongoDB connection
 mongoose
@@ -151,22 +143,6 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// route to send success email
-app.post("/send-success-email", async (req, res) => {
-  const { email } = req.body;
-  try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_SENDER,
-      to: email,
-      subject: "Welcome to the BukSU Fitness Gym!",
-      text: "Maayad ha aldaw! Your account has been successfully activated. You can now access the gym facilities.",
-    });
-    res.status(200).json({ message: "" });
-  } catch (err) {
-    res.status(500).json({ message: "Error sending success email" });
-  }
-});
-
 // route to get all users
 app.get("/users", async (req, res) => {
   try {
@@ -221,6 +197,7 @@ app.put("/users/archive", async (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/api", historyRoutes);
 app.use(captchaRoutes);
+app.use("/email", emailServiceRoutes);
 
 // server listening on..
 const PORT = process.env.PORT || 5000;

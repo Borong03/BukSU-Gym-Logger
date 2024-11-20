@@ -7,37 +7,6 @@ const passport = require("passport");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const LoginHistory = require("../models/LoginHistory");
-const cron = require("node-cron");
-
-// schedule a cleanup job to run every hour
-cron.schedule("0 * * * *", async () => {
-  console.log("Running scheduled cleanup task...");
-  try {
-    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
-    const staleLogins = await LoginHistory.find({
-      logoutTime: null,
-      loginTime: { $lt: fiveHoursAgo },
-    });
-
-    for (const login of staleLogins) {
-      // update the logoutTime to 5 hours after loginTime
-      login.logoutTime = new Date(login.loginTime.getTime() + 5 * 60 * 60 * 1000);
-      await login.save();
-    }
-
-    console.log(`${staleLogins.length} stale logins updated.`);
-  } catch (error) {
-    console.error("Error during cleanup task:", error);
-  }
-});
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.APP_PASSWORD,
-  },
-});
 
 const checkLoginDuration = async (req, res, next) => {
   try {
@@ -74,38 +43,35 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // find user by email
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Incorrect password" });
-    if (!user.isActive) return res.status(403).json({ message: "User account is not active" });
-
-    // record login history
-    const lastLogin = await LoginHistory.findOne({ userId: user._id, logoutTime: null }).sort({ loginTime: -1 });
-
-    if (lastLogin) {
-      const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
-      if (lastLogin.loginTime < fiveHoursAgo) {
-        lastLogin.logoutTime = new Date(lastLogin.loginTime.getTime() + 5 * 60 * 60 * 1000);
-        await lastLogin.save();
-      } else {
-        return res.status(400).json({ message: "User already logged in. Please log out first." });
-      }
+    // verify password
+    if (!user.password || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Incorrect credentials" });
     }
 
-    // record a new login entry
-    const loginHistory = new LoginHistory({
-      userId: user._id,
-      ipAddress: req.ip,
-      device: req.get("User-Agent"),
-    });
+    // check if the user's account is activated by admin
+    if (!user.isActive) return res.status(403).json({ message: "User account is not active" });
 
-    await loginHistory.save();
+    // check for an active session
+    const activeSession = await LoginHistory.findOne({ userId: user._id, logoutTime: null }).sort({ loginTime: -1 });
 
-    // generate a token and respond
+    // if an active session exists, do not record a new login entry
+    if (!activeSession) {
+      await LoginHistory.create({
+        userId: user._id,
+        ipAddress: req.ip,
+        device: req.get("User-Agent"),
+      });
+    }
+
+    // generate a JWT token (beta)
     const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, jwtSecret, { expiresIn: "1h" });
-    res.status(200).json({
+
+    // respond with the token and user information
+    return res.status(200).json({
       message: "Login successful",
       token,
       isAdmin: user.isAdmin,
@@ -114,7 +80,7 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "An error occurred during login" });
+    return res.status(500).json({ message: "An error occurred during login" });
   }
 });
 
