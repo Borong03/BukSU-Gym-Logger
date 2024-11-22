@@ -170,7 +170,7 @@ const ManageMembers = () => {
                   <input type="checkbox" />
                 </th>
                 <th>Name</th>
-                <th>ID</th>
+                <th>Email Username</th>
                 <th>Signup Method</th>
                 <th>Options</th>
               </tr>

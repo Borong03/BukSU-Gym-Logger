@@ -51,13 +51,13 @@ router.post("/login", async (req, res) => {
     if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid credentials" });
 
     // check if the user's account is activated by admin
-    if (!user.isActive) return res.status(403).json({ message: "User account is not active" });
+    if (!user.isActive) return res.status(403).json({ message: "User account is not activated" });
 
     // check visits in the last 7 days
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const visitCount = await LoginHistory.countDocuments({
       userId: user._id,
-      loginTime: { $gte: oneWeekAgo }, // Only visits within the last 7 days
+      loginTime: { $gte: oneWeekAgo },
     });
 
     // redirect if the user has exceeded the visit limit
@@ -68,19 +68,24 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    // log the visit only if the user has not exceeded the limit
-    await LoginHistory.create({
+    // check for an open session
+    const openSession = await LoginHistory.findOne({
       userId: user._id,
-      ipAddress: req.ip,
-      device: req.get("User-Agent"),
+      logoutTime: null, // no logout time indicates an open session
     });
 
-    // generate JWT token
-    const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, jwtSecret, { expiresIn: "1h" });
+    if (!openSession) {
+      // log the visit only if no open session exists
+      await LoginHistory.create({
+        userId: user._id,
+        loginTime: new Date(),
+        ipAddress: req.ip,
+        device: req.get("User-Agent"),
+      });
+    }
 
     return res.status(200).json({
       message: "Login successful",
-      token,
       isAdmin: user.isAdmin,
       firstName: user.firstName,
       userId: user._id.toString(),
@@ -115,24 +120,24 @@ router.get("/visits/:userId", async (req, res) => {
   }
 });
 
-
 // logout auth
 router.post("/logout", async (req, res) => {
-  const { userId } = req.body; // get userId from request body (importat)
+  const { userId } = req.body;
 
   try {
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
-    }
+    if (!userId) return res.status(400).json({ message: "User ID is required" });
 
-    // search for the most recent login history entry for this user
-    const lastLogin = await LoginHistory.findOne({ userId }).sort({ loginTime: -1 });
+    // find the most recent open session
+    const lastLogin = await LoginHistory.findOne({
+      userId,
+      logoutTime: null, // open session
+    }).sort({ loginTime: -1 });
 
     if (!lastLogin) {
-      return res.status(404).json({ message: "No login history found for this user" });
+      return res.status(404).json({ message: "No active session found for this user" });
     }
 
-    // update the logoutTime for the last login record
+    // update the logoutTime to close the session
     lastLogin.logoutTime = new Date();
     await lastLogin.save();
 

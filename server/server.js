@@ -8,11 +8,12 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const passport = require("passport");
 const session = require("express-session");
-const authRoutes = require("./routes/auth");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
-const User = require('./models/User');
 const app = express();
+
+const authRoutes = require("./routes/auth");
+const User = require('./models/User');
 const LoginHistory = require('./models/LoginHistory');
 const historyRoutes = require("./routes/history");
 const captchaRoutes = require('./routes/captchaRoutes');

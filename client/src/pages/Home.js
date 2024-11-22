@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Modal, Button } from "react-bootstrap";  // Import React-Bootstrap Modal
+import { Modal, Button } from "react-bootstrap"; // Import React-Bootstrap Modal
 import ReCAPTCHA from "react-google-recaptcha";
 
 const Home = () => {
@@ -14,7 +14,6 @@ const Home = () => {
 
     // if CAPTCHA is completed successfully, redirect to /login
     if (value) {
-      // send CAPTCHA response to the backend for verification
       try {
         const response = await fetch('http://localhost:5000/verify-captcha', {
           method: 'POST',
@@ -67,6 +66,21 @@ const Home = () => {
         </button>
       </div>
 
+      {/* Embed Facebook Page Plugin */}
+      <div className="facebook-widget">
+        <iframe
+          src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fweb.facebook.com%2Fprofile.php%3Fid%3D61550652162170&tabs=timeline&width=340&height=331&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=925221692879371"
+          width="340"
+          height="331"
+          style={{ border: "none", overflow: "hidden" }}
+          scrolling="no"
+          frameBorder="0"
+          allowFullScreen={true}
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          title="Facebook Page Plugin"
+        ></iframe>
+      </div>
+
       {/* modal for CAPTCHA */}
       <Modal
         show={showModal}
@@ -104,6 +118,11 @@ const Home = () => {
           }
           .modal.show .modal-dialog {
             transform: translateY(0);
+          }
+          .facebook-widget {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
           }
         `}
       </style>

@@ -13,11 +13,6 @@ const Dash = () => {
   const [loading, setLoading] = useState(true);
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  const token = localStorage.getItem("token");
-  if (!token) {
-    window.location.href = "/login";
-  }
-
   const handleLogout = async () => {
     try {
       const response = await fetch("http://localhost:5000/auth/logout", {

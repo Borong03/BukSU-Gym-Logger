@@ -50,6 +50,7 @@ const Login = () => {
       if (response.ok) {
         const firstName = data.firstName;
         const userId = data.userId;
+
         if (data.isAdmin) {
           navigate(`/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`);
         } else {
