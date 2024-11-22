@@ -8,21 +8,55 @@ const Signup = () => {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [emailError, setEmailError] = useState("");
+  const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const validateEmail = (e) => {
     const emailValue = e.target.value;
     setEmail(emailValue);
 
-    // RegEX to match only @student.buksu.edu.ph or @buksu.edu.ph emails
     const emailPattern =
-      /^[a-zA-Z0-9._%+-]+@(student\.buksu\.edu\.ph||buksu\.edu\.ph)$/;
+      /^[a-zA-Z0-9._%+-]+@(student\.buksu\.edu\.ph|buksu\.edu\.ph)$/;
 
     if (!emailPattern.test(emailValue)) {
       setEmailError("Please use a valid BukSU institutional email.");
     } else {
       setEmailError("");
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (emailError) {
+      alert("Please use a valid BukSU email.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, email, password }),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        navigate("/success");
+      } else {
+        const data = await response.json();
+        alert(data.message || "Signup failed, please try again.");
+      }
+    } catch (error) {
+      console.error("Error during signup:", error);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    window.location.href = "http://localhost:5000/auth/google";
   };
 
   const goBack = () => navigate(-1);
@@ -40,28 +74,30 @@ const Signup = () => {
               <h5>
                 <b>Register for free!</b>
               </h5>
-              <p>
-                Signup using your BukSU email to <br></br> enjoy your fitness
-                perks!
-              </p>
+              <p>Signup using your BukSU email to enjoy your fitness perks!</p>
             </div>
           </div>
           <div className="col light-background">
             <div className="card-body">
-              <div className="image-container">
-                <img className="svgs" src="media/dummy.svg" alt="Dummy" />
-                <img className="svgs" src="media/divider2.svg" alt="Divider" />
-              </div>
-
-              <form
-                action="/success"
-                onSubmit={(e) => {
-                  if (emailError) {
-                    e.preventDefault(); // Prevent submission if email is invalid
-                    alert("Please use a valid BukSU email.");
-                  }
-                }}
+              <button
+                className="google-signin-button"
+                onClick={handleGoogleSignIn}
               >
+                <div className="image-container">
+                  <img
+                    className="svgs"
+                    src="media/dummy.svg"
+                    alt="Google Logo"
+                  />
+                  <img
+                    className="svgs"
+                    src="media/divider2.svg"
+                    alt="Divider"
+                  />
+                </div>
+              </button>
+
+              <form onSubmit={handleSubmit}>
                 <div className="row">
                   <div className="col-md-6">
                     <div className="form-floating mb-3">
@@ -71,6 +107,8 @@ const Signup = () => {
                         id="floatingFirstName"
                         placeholder="John"
                         required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
                       />
                       <label htmlFor="floatingFirstName">First Name</label>
                     </div>
@@ -83,6 +121,8 @@ const Signup = () => {
                         id="floatingLastName"
                         placeholder="Doe"
                         required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                       />
                       <label htmlFor="floatingLastName">Last Name</label>
                     </div>
@@ -103,6 +143,19 @@ const Signup = () => {
                   {emailError && (
                     <div className="invalid-feedback">{emailError}</div>
                   )}
+                </div>
+
+                <div className="form-floating">
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="floatingPassword"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <label htmlFor="floatingPassword">Password</label>
                 </div>
 
                 <div className="form-check">
@@ -155,7 +208,7 @@ const Signup = () => {
           <Modal.Title>Terms & Conditions</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Here you can write your Terms & Conditions...</p>
+          <p>tbd</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowTerms(false)}>
@@ -163,7 +216,6 @@ const Signup = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
       {/* privacy modal */}
       <Modal show={showPrivacy} onHide={() => setShowPrivacy(false)} centered>
         <Modal.Header>
@@ -173,17 +225,7 @@ const Signup = () => {
           <p>
             In compliance with the <b>Data Privacy Act of 2012</b>, BukSU
             Fitness Gym - Digital Logging System is committed to protect and
-            respect your personal data privacy. The University collects various
-            data and information from various subjects using different systems.
-            In processing this data and information, BukSU ensures the free flow
-            of information as required under the{" "}
-            <b>Freedom of Information Act (Executive Order No. 2 S. 2016).</b>
-          </p>
-          <br></br>
-          <p>
-            Should there be data privacy concerns and requests, you may contact
-            the University Data Protection Officer at{" "}
-            <b>dataprivacyoffice@buksu.edu.ph</b>.
+            respect your personal data privacy.
           </p>
         </Modal.Body>
         <Modal.Footer>
