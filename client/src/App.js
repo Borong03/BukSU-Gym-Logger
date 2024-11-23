@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
 import Home from "./pages/Home";
 import Disclaimer from "./pages/Disclaimer";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/styles.css";
 import Login from "./pages/login";
 import Signup from "./pages/Signup";
@@ -19,6 +20,13 @@ import Admin from "./pages/admin/admin";
 function App() {
   return (
     <Router>
+      {/* Toast container where the toasts will be rendered */}
+      <div
+        id="toast-container"
+        className="position-fixed bottom-0 end-0 p-3"
+        style={{ zIndex: 1050 }}
+      ></div>
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/disclaimer" element={<Disclaimer />} />

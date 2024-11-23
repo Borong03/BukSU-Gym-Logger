@@ -15,14 +15,14 @@ const Dash = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/auth/logout", {
+      const response = await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         alert(data.message);
         navigate("/login");
@@ -44,9 +44,12 @@ const Dash = () => {
         if (response.ok) {
           setVisits(data.visits);
 
-          // Redirect to /limit if visits exceed 3
-          if (data.visits >= 3) {
+          // redirect to /limit if visits exceed 3
+          if (data.visits >= 4) {
             navigate(`/limit?userId=${userId}`);
+          } else {
+            // log time-in data only if the user is within the limit
+            await logTimeIn();
           }
         } else {
           console.error("Failed to fetch visits:", data.message);
@@ -55,6 +58,24 @@ const Dash = () => {
         console.error("Error fetching visits:", error);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const logTimeIn = async () => {
+      try {
+        const response = await fetch(`${API_URL}/auth/log-time-in`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Error logging time in:", data.message);
+        }
+      } catch (error) {
+        console.error("Error logging time in:", error);
       }
     };
 

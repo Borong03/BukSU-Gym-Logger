@@ -33,14 +33,14 @@ const Login = () => {
       alert("Please fill in all fields correctly.");
       return;
     }
-  
+
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
       if (response.status === 429) {
         alert(data.message); // inform the user that they've hit the limit
@@ -48,18 +48,11 @@ const Login = () => {
         return; // prevent further execution
       }
       if (response.ok) {
-        const firstName = data.firstName;
-        const userId = data.userId;
-
-        if (data.isAdmin) {
-          navigate(`/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`);
-        } else {
-          navigate(`/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`);
-        }
-      } else if (response.status === 429) {
-        // Pass userId to the /limit page
-        const userId = data.userId; // Ensure userId is retrieved from the server response
-        navigate(`/limit?userId=${userId}`);
+        const { firstName, userId, isAdmin } = data;
+        const redirectUrl = isAdmin
+          ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
+          : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
+        navigate(redirectUrl);
       } else {
         alert(data.message || "Login failed, please try again.");
       }
@@ -68,7 +61,7 @@ const Login = () => {
       alert("An error occurred. Please try again.");
     }
   };
-  
+
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
@@ -84,7 +77,9 @@ const Login = () => {
             <div className="half">
               <img src="/media/write.webp" className="idlogo" alt="ID Logo" />
               <h5>
-                <b>Login to the <br></br> BukSU Fitness Gym</b>
+                <b>
+                  Login to the <br></br> BukSU Fitness Gym
+                </b>
               </h5>
             </div>
           </div>
@@ -168,7 +163,10 @@ const Login = () => {
                 </div>
 
                 <div className="reqbuttons">
-                  <button onClick={() => navigate("/signup")} className="btn btn-dark backback">
+                  <button
+                    onClick={() => navigate("/signup")}
+                    className="btn btn-dark backback"
+                  >
                     Signup
                   </button>
                   <button type="submit" className="btn btn-primary gotit">

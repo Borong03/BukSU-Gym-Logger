@@ -228,6 +228,7 @@ p {
 
 /* amity angelic blur */
 .modal-backdrop {
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   background-color: rgba(0, 0, 0, 0.1);
 }

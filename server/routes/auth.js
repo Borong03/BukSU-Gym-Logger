@@ -60,7 +60,7 @@ router.post("/login", async (req, res) => {
       loginTime: { $gte: oneWeekAgo },
     });
 
-    // redirect if the user has exceeded the visit limit
+    // enforce weekly visit limit BEFORE logging a new session
     if (visitCount >= 3) {
       return res.status(429).json({
         message: "Weekly visit limit reached.",

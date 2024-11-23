@@ -23,17 +23,58 @@ body {
   background-size: cover;
 }
 
+.main-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.content {
+  flex: 1;
+}
+
+.facebook-widget {
+  flex-shrink: 0;
+  margin-left: 20px;
+}
+
+.modal-backdrop {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal.fade .modal-dialog {
+  transform: translateY(-10%);
+  transition: all 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0);
+}
+
+.newsupdates {
+  margin-top: 7rem !important;
+  margin-left: 0.5rem !important;
+}
+
 .fitlogo {
   width: 10rem;
   height: 10rem;
-  margin-left: 6rem !important;
   margin-top: 5rem !important;
+}
+
+.card {
+  position: relative;
+  border-radius: 44px !important;
+  width: 60% !important;
+  box-shadow: 0px 0px 53.6px 0px rgba(0, 0, 0, 0.25) !important;
+  background-color: #fefbff;
 }
 
 .welcomepage {
   font-family: "ClashGrotesk-Variable" !important;
   color: white;
-  margin-left: 6rem;
   margin-top: 3rem;
 }
 
@@ -41,7 +82,6 @@ body {
   border-radius: 138px 10px 10px 138px !important;
   width: 6rem;
   height: 3rem !important;
-  margin-right: 0.3rem;
 }
 
 .Visits {
@@ -52,13 +92,11 @@ body {
 
 .gogo {
   border-radius: 10px 138px 138px 10px !important;
-  margin-left: 10rem;
   height: 3rem !important;
   width: 10rem;
 }
 
 .groupbuttons {
-  margin-left: 6rem;
   margin-top: 7rem;
 }
 
@@ -71,14 +109,6 @@ p {
   font-family: "Inter", sans-serif;
   font-weight: medium;
   margin-bottom: -0.2rem;
-}
-
-.card {
-  position: relative;
-  border-radius: 44px !important;
-  width: 60% !important;
-  box-shadow: 0px 0px 53.6px 0px rgba(0, 0, 0, 0.25) !important;
-  background-color: #fefbff;
 }
 
 .button-container {
@@ -228,6 +258,7 @@ p {
 
 /* amity angelic blur */
 .modal-backdrop {
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   background-color: rgba(0, 0, 0, 0.1);
 }
@@ -257,9 +288,149 @@ p {
   outline: none; /* Remove focus outline */
 }
 
-#myTable_wrapper {
-  background-color: #f9f9f9; 
-  padding: 20px; 
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* admin style */
+
+.sidebar {
+  width: 250px;
+  background-color: #f8f9fad2;
+  padding: 15px;
+  position: fixed;
+  left: -250px;
+  top: 5.1rem;
+  height: 100%;
+  transition: left 0.3s ease;
+  z-index: 1050;
+}
+
+.sidebar.show {
+  left: 0;
+}
+
+.nav-link.active {
+  background-color: #00008b;
+  color: white;
+}
+
+.nav-link {
+  margin-bottom: 1rem;
+}
+
+.content {
+  margin-top: 4rem;
+  flex-grow: 1;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+.content.sidebar-open {
+  margin-left: 250px;
+}
+
+.welcome {
+  color: white;
+  margin-top: -2rem !important;
+}
+
+.navbar {
+  padding: 0.75rem 1rem;
+  z-index: 1000;
+}
+
+.hamburger {
+  margin-right: 1rem;
+}
+
+.branding {
+  font-weight: bold;
+  font-size: medium;
+}
+
+.headertxt {
+  font-family: "ClashGrotesk-Variable" !important;
+  font-weight: 600;
+}
+
+.slogo {
+  width: 3rem;
+  height: 3rem;
+  margin-right: 0.4rem;
+}
+
+.aight {
+  position: absolute;
+  right: 1rem;
+  bottom: 8px;
+  display: block;
+}
+
+.bigimage {
+  width: 6rem;
+  height: 6rem;
+}
+
+.raise {
+  width: 3rem;
+  height: 3rem;
+}
+
+.widgets {
+  margin-top: 2rem;
+}
+
+.contentbody {
+  padding: 4rem;
+}
+
+.no-border {
+  border: none;
+}
+
+.vertibar {
+  width: 2rem !important;
+}
+
+.navpill {
+  margin-top: 2rem;
+}
+
+.pilled {
+  border-radius: 10rem !important;
+  margin-left: 1.4rem;
+  font-weight: bold;
+  width: 8rem;
+  text-align: center;
+}
+
+.inactivepill {
+  background-color: lightgrey !important;
+  margin-left: 2rem;
+  border-radius: 10rem !important;
+  color: #171717;
+  width: 8rem;
+  text-align: center;
+}
+
+.linee {
+  width: 0.125rem;
+  height: 2.3125rem;
+  background-color: white;
+  margin-left: 2rem;
+  margin-top: 2px;
+}
+
+.circlebuttonsb {
+  background-color: #0d6efd;
+  color: white;
+  margin-left: 2rem;
+}
+
+.circlebuttonsr {
+  background-color: #ea4335;
+  color: white;
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+.table {
+  margin-top: 2rem !important;
 }
