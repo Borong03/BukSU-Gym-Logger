@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
-import "./styles.css";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,10 +66,7 @@ const Login = () => {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
-    >
+    <div className="d-flex justify-content-center align-items-center">
       <div className="card twotone">
         <div className="row">
           <div className="col dark-background">
@@ -164,7 +160,7 @@ const Login = () => {
 
                 <div className="reqbuttons">
                   <button
-                    onClick={() => navigate("/signup")}
+                    onClick={() => navigate("/disclaimer")}
                     className="btn btn-dark backback"
                   >
                     Signup

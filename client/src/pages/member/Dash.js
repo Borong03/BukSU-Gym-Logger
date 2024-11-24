@@ -89,7 +89,7 @@ const Dash = () => {
       className="d-flex justify-content-center align-items-center"
       style={{ height: "100vh" }}
     >
-      <div className="card">
+      <div className="card cardwhole">
         <div className="row">
           <div className="card-body">
             <div className="successcard">
@@ -103,17 +103,18 @@ const Dash = () => {
                 ) : (
                   <>
                     Your time in has been logged. <br />
-                    <b>{visits} out of 3 visits per week</b> have been used. <br />
+                    <b>{visits} out of 3 visits per week</b> have been used.{" "}
                     <br />
-                    You can now click <b>Log another user</b> and enjoy the Fitness
-                    Gym amenities.
+                    <br />
+                    You can now click <b>Log another user</b> and enjoy the
+                    Fitness Gym amenities.
                   </>
                 )}
               </p>
 
               <div className="reqbuttons">
                 <button
-                  onClick={() => navigate(`/history?userId=${userId}`)} 
+                  onClick={() => navigate(`/history?userId=${userId}`)}
                   className="btn btn-primary left"
                 >
                   View Visit History
@@ -124,10 +125,7 @@ const Dash = () => {
                 >
                   Log another User
                 </button>
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-danger right"
-                >
+                <button onClick={handleLogout} className="btn btn-danger right">
                   Log out
                 </button>
               </div>

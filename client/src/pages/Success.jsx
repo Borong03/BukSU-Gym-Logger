@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./styles.css";
 
 const Success = () => {
   const navigate = useNavigate();
@@ -10,7 +9,7 @@ const Success = () => {
       className="d-flex justify-content-center align-items-center"
       style={{ height: "100vh" }}
     >
-      <div className="card">
+      <div className="card cardwhole">
         <div className="row">
           <div className="card-body">
             <div className="successcard">

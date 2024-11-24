@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles.css";
+import "../../styles/styles.css";
 
 const IDCheck = () => {
   const [email, setEmail] = useState("");

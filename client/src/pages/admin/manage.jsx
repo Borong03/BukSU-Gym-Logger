@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "../styles.css";
+import "../../styles/styles.css";
 // kani senj, data table.
 // copy paste lang ni
 import DataTable from "datatables.net-dt";
@@ -142,24 +142,6 @@ const ManageMembers = () => {
               <button className="btn circlebuttonsr">
                 <i className="bi bi-archive"></i>
               </button>
-            </li>
-            <li className="nav-item">
-              <div className="input-group mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search for..."
-                  aria-label="Search for..."
-                  aria-describedby="button-addon2"
-                />
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  id="button-addon2"
-                >
-                  Go
-                </button>
-              </div>
             </li>
           </ul>
 

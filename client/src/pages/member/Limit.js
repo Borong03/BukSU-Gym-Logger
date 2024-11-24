@@ -13,7 +13,7 @@ const Limit = () => {
       className="d-flex justify-content-center align-items-center"
       style={{ height: "100vh" }}
     >
-      <div className="card">
+      <div className="card cardwhole">
         <div className="row">
           <div className="card-body">
             <div className="successcard">
