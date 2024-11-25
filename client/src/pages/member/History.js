@@ -53,10 +53,7 @@ const History = () => {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
-    >
+    <div className="d-flex justify-content-center align-items-center">
       <div className="card twotone">
         <div className="row">
           <div className="col dark-background">

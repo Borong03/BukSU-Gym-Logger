@@ -134,7 +134,10 @@ const ManageMembers = () => {
               <div className="linee"></div>
             </li>
             <li className="nav-item">
-              <button className="btn circlebuttonsb">
+              <button
+                onClick={() => navigate("/signup")}
+                className="btn circlebuttonsb"
+              >
                 <i className="bi bi-plus-lg"></i>
               </button>
             </li>
@@ -145,7 +148,9 @@ const ManageMembers = () => {
             </li>
           </ul>
 
-          <table className="table table-striped table-hover" id="myTable"> {/* kaning id senj, copy ranis table gihapon sa pikas, thankies :3 */}
+          <table className="table table-striped table-hover" id="myTable">
+            {" "}
+            {/* kaning id senj, copy ranis table gihapon sa pikas, thankies :3 */}
             <thead>
               <tr>
                 <th>

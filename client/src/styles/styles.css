@@ -380,7 +380,7 @@ p {
 }
 
 .content {
-  margin-top: 4rem;
+  margin-top: -2rem;
   flex-grow: 1;
   padding: 2rem;
   transition: margin-left 0.3s ease;
