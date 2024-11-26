@@ -147,16 +147,15 @@ const ManageMembers = () => {
           <ul className="nav navpill nav-pills">
             <li className="nav-item">
               <a
-                className="nav-link pilled active"
+                className="nav-link inactivepill"
                 aria-current="page"
+                href="/manage"
               >
                 Activated
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link inactivepill" href="/manage?signed-up">
-                Signed Up
-              </a>
+              <a className="nav-link pilled active">Signed Up</a>
             </li>
             <li className="nav-item">
               <div className="linee"></div>

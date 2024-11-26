@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const UpdateDetails = () => {
   const location = useLocation();
-  const user = location.state?.user || {}; // recieve data from previous
   const navigate = useNavigate();
+  const user = location.state?.user || {}; // recieve data from previous
 
   // variables to store user data
   const [firstName, setFirstName] = useState(user.firstName || "");
@@ -37,6 +37,10 @@ const UpdateDetails = () => {
     } catch (error) {
       alert(`Error: ${error.message}`);
     }
+  };
+
+  const goBack = () => {
+    navigate(-1);
   };
 
   return (
@@ -112,7 +116,7 @@ const UpdateDetails = () => {
               <div className="reqbuttons">
                 <button
                   type="button"
-                  onClick={() => navigate("/members")}
+                  onClick={goBack}
                   className="btn btn-dark backback"
                 >
                   Go Back

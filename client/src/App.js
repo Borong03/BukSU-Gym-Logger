@@ -16,6 +16,7 @@ import AdminDash from "./pages/admin/admin";
 import Manage from "./pages/admin/manage";
 import Update from "./pages/admin/update";
 import Admin from "./pages/admin/admin";
+import Managed from "./pages/admin/manageSigned";
 
 // stylesheets
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -92,6 +93,7 @@ function App() {
           <Route path="/idcheck" element={<IDCheck />} />
           <Route path="/admindashboard" element={<AdminDash />} />
           <Route path="/manage" element={<Manage />} />
+          <Route path="/manage?signed-up" element={<Managed />} />
           <Route path="/update" element={<Update />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>

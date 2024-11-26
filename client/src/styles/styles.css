@@ -498,3 +498,10 @@ p {
 .table {
   margin-top: 2rem !important;
 }
+
+.custom-table-background {
+  background-color: #f8f9fa; /* Light gray background */
+  border-radius: 8px; /* Optional: rounded corners */
+  padding: 15px; /* Optional: add padding */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: add subtle shadow */
+}
