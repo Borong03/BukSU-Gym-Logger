@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal, Button } from "react-bootstrap";
+import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "../../styles/styles.css";
+import "../admin.css";
 import DataTable from "datatables.net-dt";
 import "datatables.net-dt/css/dataTables.dataTables.css";
 
 const ManageMembers = () => {
   const [members, setMembers] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   // Fetch members from the backend
@@ -42,30 +46,51 @@ const ManageMembers = () => {
     }
   }, [members]);
 
-  // Function to archive a member
-  const handleArchiveClick = async (email) => {
+  // Show confirmation modal for archiving
+  const handleArchiveClick = (member) => {
+    setSelectedMember(member); // Set the selected member
+    setShowModal(true); // Show modal
+  };
+
+  // Confirm archive of a member
+  const confirmArchive = async () => {
     try {
       const response = await fetch("http://localhost:5000/users/archive", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: selectedMember.email }),
       });
 
       if (response.ok) {
+        await response.json(); // Parse the JSON response
         const updatedMembers = members.filter(
-          (member) => member.email !== email
+          (member) => member.email !== selectedMember.email
         );
-        setMembers(updatedMembers); // Update UI to remove archived member
-        alert("Member successfully archived");
+        setMembers(updatedMembers);
+
+        // Dynamically update the toast body
+        const toastBody = document.querySelector("#archiveToast .toast-body");
+        if (toastBody) {
+          toastBody.textContent = `${selectedMember.firstName} has been archived successfully!`;
+        }
+
+        // Initialize and show the toast
+        const toastEl = document.getElementById("archiveToast");
+        const toast = new bootstrap.Toast(toastEl); // Use imported bootstrap
+        toast.show();
+
+        // Close the modal
+        setShowModal(false);
       } else {
-        const result = await response.json();
+        const result = await response.json(); // Parse error response
+        console.error("Archive error:", result.message);
         alert(result.message || "Error archiving member");
       }
     } catch (error) {
       console.error("Error archiving member:", error);
-      alert("Error archiving member");
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -146,15 +171,12 @@ const ManageMembers = () => {
 
           <ul className="nav navpill nav-pills">
             <li className="nav-item">
-              <a
-                className="nav-link pilled active"
-                aria-current="page"
-              >
+              <a className="nav-link pilled active " aria-current="page">
                 Activated
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link inactivepill" href="/manage?signed-up">
+              <a className="nav-link inactivepill" href="/manage-signed">
                 Signed Up
               </a>
             </li>
@@ -201,7 +223,7 @@ const ManageMembers = () => {
                     <td>
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary updatebutton"
                         onClick={() => handleUpdateClick(member)}
                       >
                         Update Details
@@ -210,7 +232,7 @@ const ManageMembers = () => {
                       <button
                         type="button"
                         className="btn btn-danger"
-                        onClick={() => handleArchiveClick(member.email)}
+                        onClick={() => handleArchiveClick(member)}
                       >
                         Archive Member
                       </button>
@@ -220,6 +242,57 @@ const ManageMembers = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      {/* Modal for Archive Confirmation */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Archive</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to archive{" "}
+          <strong>
+            {selectedMember?.firstName} {selectedMember?.lastName}
+          </strong>
+          ?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmArchive}>
+            Archive
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Toast for Archive Success */}
+      <div
+        className="toast align-items-center"
+        id="archiveToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Archive Services</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body">
+          {selectedMember?.firstName} has been archived successfully!
         </div>
       </div>
     </div>

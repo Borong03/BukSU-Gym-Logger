@@ -30,6 +30,7 @@ body {
   margin: 0;
   overflow-x: hidden;
   font-family: "Inter", sans-serif !important;
+  background-image: url("../assets/images/gaussian.png") !important;
 }
 
 .background-container {
@@ -42,7 +43,6 @@ body {
   background-size: cover;
   background-position: center;
   z-index: -1;
-  filter: blur(50px);
 }
 
 .content-container {
@@ -212,4 +212,24 @@ body {
   flex: 1 1 auto;
   min-height: 1px;
   padding: 1.25rem;
+}
+
+.table {
+  margin-top: 2rem !important;
+}
+
+.custom-table-background {
+  background-color: #f8f9fa; /* Light gray background */
+  border-radius: 8px; /* Optional: rounded corners */
+  padding: 15px; /* Optional: add padding */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: add subtle shadow */
+}
+
+.updatebutton {
+  margin-right: 6px;
+  margin-bottom: 6px;
+}
+
+.goodbutton {
+  margin-bottom: 6px;
 }

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../admin.css";
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -93,7 +93,7 @@ function App() {
           <Route path="/idcheck" element={<IDCheck />} />
           <Route path="/admindashboard" element={<AdminDash />} />
           <Route path="/manage" element={<Manage />} />
-          <Route path="/manage?signed-up" element={<Managed />} />
+          <Route path="/manage-signed" element={<Managed />} />
           <Route path="/update" element={<Update />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>

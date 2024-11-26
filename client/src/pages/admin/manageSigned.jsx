@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Modal, Button } from "react-bootstrap";
+import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "../../styles/styles.css";
+import "../admin.css";
 import DataTable from "datatables.net-dt";
 import "datatables.net-dt/css/dataTables.dataTables.css";
 
 const ManageMembers = () => {
   const [members, setMembers] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   // Fetch members from the backend
@@ -17,9 +21,9 @@ const ManageMembers = () => {
         const response = await fetch("http://localhost:5000/users");
         const data = await response.json();
 
-        // Filter active members and format the data
+        // Filter inactive members and format the data
         const formattedData = data
-          .filter((member) => member.isActive)
+          .filter((member) => !member.isActive)
           .map((member) => ({
             ...member,
             userId: member.email.split("@")[0],
@@ -42,30 +46,53 @@ const ManageMembers = () => {
     }
   }, [members]);
 
-  // Function to archive a member
-  const handleArchiveClick = async (email) => {
+  // Show confirmation modal for activation
+  const handleActivateClick = (member) => {
+    setSelectedMember(member); // Set the selected member
+    setShowModal(true); // Show modal
+  };
+
+  // Confirm activation of a member
+  const confirmActivation = async () => {
     try {
-      const response = await fetch("http://localhost:5000/users/archive", {
+      const response = await fetch("http://localhost:5000/users/activate", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: selectedMember.email }),
       });
 
       if (response.ok) {
+        await response.json(); // Parse the JSON response
         const updatedMembers = members.filter(
-          (member) => member.email !== email
+          (member) => member.email !== selectedMember.email
         );
-        setMembers(updatedMembers); // Update UI to remove archived member
-        alert("Member successfully archived");
+        setMembers(updatedMembers);
+
+        // Dynamically update the toast body
+        const toastBody = document.querySelector(
+          "#activationToast .toast-body"
+        );
+        if (toastBody) {
+          toastBody.textContent = `Congrats, ${selectedMember.firstName} has been activated!`;
+        }
+
+        // Initialize and show the toast
+        const toastEl = document.getElementById("activationToast");
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // 3 seconds
+        toast.show();
+
+        // Close the modal
+        setShowModal(false);
       } else {
-        const result = await response.json();
-        alert(result.message || "Error archiving member");
+        const result = await response.json(); // Parse error response
+        console.error("Activation error:", result.message);
+        alert(result.message || "Error activating member");
       }
     } catch (error) {
-      console.error("Error archiving member:", error);
-      alert("Error archiving member");
+      console.error("Error activating member:", error);
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -138,24 +165,19 @@ const ManageMembers = () => {
               alt="Welcome"
             />
             <h1 className="headertxt">Manage Members</h1>
-            <p>
-              Add, edit, or archive members in this list. You can find archived
-              members in the “Signed Up” tab.
-            </p>
+            <p>Add, edit, or activate members in this list.</p>
           </div>
 
           <ul className="nav navpill nav-pills">
             <li className="nav-item">
-              <a
-                className="nav-link inactivepill"
-                aria-current="page"
-                href="/manage"
-              >
+              <a className="nav-link inactivepill" href="/manage">
                 Activated
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link pilled active">Signed Up</a>
+              <a className="nav-link pilled active " aria-current="page">
+                Signed Up
+              </a>
             </li>
             <li className="nav-item">
               <div className="linee"></div>
@@ -200,7 +222,7 @@ const ManageMembers = () => {
                     <td>
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary updatebutton"
                         onClick={() => handleUpdateClick(member)}
                       >
                         Update Details
@@ -208,10 +230,10 @@ const ManageMembers = () => {
 
                       <button
                         type="button"
-                        className="btn btn-danger"
-                        onClick={() => handleArchiveClick(member.email)}
+                        className="btn btn-success goodbutton"
+                        onClick={() => handleActivateClick(member)}
                       >
-                        Archive Member
+                        Activate Member
                       </button>
                     </td>
                   </tr>
@@ -219,6 +241,57 @@ const ManageMembers = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      {/* Modal for Activation Confirmation */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Activation</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to activate{" "}
+          <strong>
+            {selectedMember?.firstName} {selectedMember?.lastName}
+          </strong>
+          ?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="success" onClick={confirmActivation}>
+            Activate
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Toast for Activation Success */}
+      <div
+        className="toast align-items-center"
+        id="activationToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Activation Services</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body">
+          Congrats, {selectedMember?.firstName} has been activated!
         </div>
       </div>
     </div>

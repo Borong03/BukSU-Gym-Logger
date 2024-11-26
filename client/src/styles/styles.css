@@ -18,7 +18,6 @@ body {
   overflow-x: hidden;
   font-family: "Inter", sans-serif !important;
   padding-top: 3rem;
-  padding-bottom: 3rem;
 }
 
 .background-container {
@@ -504,4 +503,9 @@ p {
   border-radius: 8px; /* Optional: rounded corners */
   padding: 15px; /* Optional: add padding */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: add subtle shadow */
+}
+
+.updatebutton {
+  margin-right: 6px;
+  margin-bottom: 6px;
 }
