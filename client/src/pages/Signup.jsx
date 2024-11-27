@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
-import "./styles.css";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -9,6 +8,9 @@ const Signup = () => {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordMatch, setPasswordMatch] = useState(true);
+  const [passwordStrength, setPasswordStrength] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -28,10 +30,35 @@ const Signup = () => {
     }
   };
 
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+
+    // Check strength
+    if (value.length < 6) {
+      setPasswordStrength("👎 Password must be atleast 6 characters.");
+    } else if (value.match(/[A-Z]/) && value.match(/[0-9]/)) {
+      setPasswordStrength("💖 Your Password is strong like you!");
+    } else {
+      setPasswordStrength(
+        "😐 Hmmm... It can be better. Try adding a number and an uppercase letter."
+      );
+    }
+
+    // Validate password match
+    setPasswordMatch(value === confirmPassword);
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    setPasswordMatch(value === password);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (emailError) {
-      alert("Please use a valid BukSU email.");
+    if (emailError || !passwordMatch || passwordStrength === "Weak") {
+      alert("Please fix the errors before submitting.");
       return;
     }
 
@@ -145,17 +172,54 @@ const Signup = () => {
                   )}
                 </div>
 
-                <div className="form-floating">
+                <div className="form-floating mb-3">
                   <input
                     type="password"
                     className="form-control"
                     id="floatingPassword"
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     required
                   />
                   <label htmlFor="floatingPassword">Password</label>
+                  <div className="mt-2">
+                    <small
+                      className={`text-${
+                        passwordStrength ===
+                        "💖 Your Password is strong like you!"
+                          ? "success"
+                          : passwordStrength ===
+                            "😐 Hmmm... It can be better. Try adding a number and an uppercase letter."
+                          ? "warning"
+                          : "danger"
+                      }`}
+                    >
+                      {passwordStrength}
+                    </small>
+                  </div>
+                </div>
+
+                <div className="form-floating mb-3">
+                  <input
+                    type="password"
+                    className={`form-control ${
+                      passwordMatch ? "" : "is-invalid"
+                    }`}
+                    id="floatingConfirmPassword"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    required
+                  />
+                  <label htmlFor="floatingConfirmPassword">
+                    Confirm Password
+                  </label>
+                  {!passwordMatch && (
+                    <div className="invalid-feedback">
+                      Passwords do not match.
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-check">

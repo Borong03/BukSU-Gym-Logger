@@ -1,16 +1,16 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/styles.css";
 
 const Limit = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const userId = queryParams.get("userId");
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
-    >
-      <div className="card">
+    <div className="d-flex justify-content-center align-items-center">
+      <div className="card cardwhole">
         <div className="row">
           <div className="card-body">
             <div className="successcard">
@@ -29,13 +29,13 @@ const Limit = () => {
 
               <div className="reqbuttons">
                 <button
-                  onClick={() => navigate("/history")}
+                  onClick={() => navigate(`/history?userId=${userId}`)}
                   className="btn btn-dark left"
                 >
                   View Visit History
                 </button>
                 <button
-                  onClick={() => navigate("/fingerprint")}
+                  onClick={() => navigate("/login")}
                   className="btn btn-primary right"
                 >
                   Log another user

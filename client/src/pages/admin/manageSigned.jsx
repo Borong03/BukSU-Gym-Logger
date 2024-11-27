@@ -22,9 +22,9 @@ const ManageMembers = () => {
         const response = await fetch("http://localhost:5000/users");
         const data = await response.json();
 
-        // filter active members and format the data
+        // filter inactive members and format the data
         const formattedData = data
-          .filter((member) => member.isActive)
+          .filter((member) => !member.isActive)
           .map((member) => ({
             ...member,
             userId: member.email.split("@")[0],
@@ -47,16 +47,16 @@ const ManageMembers = () => {
     }
   }, [members]);
 
-  // show confirmation modal for archiving
-  const handleArchiveClick = (member) => {
-    setSelectedMember(member); // set the selected member
-    setShowModal(true); // show modal
+  // show confirmation modal for activation
+  const handleActivateClick = (member) => {
+    setSelectedMember(member); // Set the selected member
+    setShowModal(true); // Show modal
   };
 
-  // confirm archive of a member
-  const confirmArchive = async () => {
+  // confirm activation of a member
+  const confirmActivation = async () => {
     try {
-      const response = await fetch("http://localhost:5000/users/archive", {
+      const response = await fetch("http://localhost:5000/users/activate", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -65,38 +65,36 @@ const ManageMembers = () => {
       });
 
       if (response.ok) {
-        await response.json(); // the JSON response
+        await response.json(); // parse the JSON response
         const updatedMembers = members.filter(
           (member) => member.email !== selectedMember.email
         );
         setMembers(updatedMembers);
 
-        // adapt update the toast body
-        const toastBody = document.querySelector("#archiveToast .toast-body");
+        // adaptive update the toast body
+        const toastBody = document.querySelector(
+          "#activationToast .toast-body"
+        );
         if (toastBody) {
-          toastBody.textContent = `${selectedMember.firstName} has been archived successfully!`;
+          toastBody.textContent = `Congrats, ${selectedMember.firstName} has been activated!`;
         }
 
         // init and show the toast
-        const toastEl = document.getElementById("archiveToast");
-        const toast = new bootstrap.Toast(toastEl);
+        const toastEl = document.getElementById("activationToast");
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // 3 seconds
         toast.show();
 
-        // cl the modal
+        // close the modal
         setShowModal(false);
       } else {
         const result = await response.json(); // error response
-        console.error("Archive error:", result.message);
-        alert(result.message || "Error archiving member");
+        console.error("Activation error:", result.message);
+        alert(result.message || "Error activating member");
       }
     } catch (error) {
-      console.error("Error archiving member:", error);
+      console.error("Error activating member:", error);
       alert("An unexpected error occurred. Please try again.");
     }
-  };
-
-  const handleUpdateClick = (member) => {
-    navigate("/update", { state: { user: member } });
   };
 
   const toggleSidebar = () => {
@@ -129,7 +127,7 @@ const ManageMembers = () => {
             <a className="nav-link active">Members</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" onClick={() => navigate("/admin/report")}>
+            <a className="nav-link" onClick={() => navigate("/admin/reports")}>
               Report Generation
             </a>
           </li>
@@ -178,23 +176,20 @@ const ManageMembers = () => {
               alt="Welcome"
             />
             <h1 className="headertxt">Manage Members</h1>
-            <p>
-              Add, edit, or archive members in this list. You can find archived
-              members in the “Signed Up” tab.
-            </p>
+            <p>Add, edit, or activate members in this list.</p>
           </div>
 
           <ul className="nav navpill nav-pills">
             <li className="nav-item">
-              <a className="nav-link pilled active " aria-current="page">
+              <a
+                className="nav-link inactivepill"
+                onClick={() => navigate("/admin/manage")}
+              >
                 Activated
               </a>
             </li>
             <li className="nav-item">
-              <a
-                className="nav-link inactivepill"
-                onClick={() => navigate("/admin/manage-signed")}
-              >
+              <a className="nav-link pilled active " aria-current="page">
                 Signed Up
               </a>
             </li>
@@ -241,18 +236,10 @@ const ManageMembers = () => {
                     <td>
                       <button
                         type="button"
-                        className="btn btn-primary updatebutton"
-                        onClick={() => handleUpdateClick(member)}
+                        className="btn btn-primary"
+                        onClick={() => handleActivateClick(member)}
                       >
-                        Update Details
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        onClick={() => handleArchiveClick(member)}
-                      >
-                        Archive Member
+                        Activate Member
                       </button>
                     </td>
                   </tr>
@@ -263,13 +250,13 @@ const ManageMembers = () => {
         </div>
       </div>
 
-      {/* Modal for Archive Confirmation */}
+      {/* Modal for Activation Confirmation */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Archive</Modal.Title>
+          <Modal.Title>Confirm Activation</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to archive{" "}
+          Are you sure you want to activate{" "}
           <strong>
             {selectedMember?.firstName} {selectedMember?.lastName}
           </strong>
@@ -279,16 +266,16 @@ const ManageMembers = () => {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={confirmArchive}>
-            Archive
+          <Button variant="success" onClick={confirmActivation}>
+            Activate
           </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Toast for Archive Success */}
+      {/* Toast for Activation Success */}
       <div
         className="toast align-items-center"
-        id="archiveToast"
+        id="activationToast"
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
@@ -300,7 +287,7 @@ const ManageMembers = () => {
         }}
       >
         <div className="toast-header">
-          <strong className="me-auto">Archive Services</strong>
+          <strong className="me-auto">Activation Services</strong>
           <small>Just now</small>
           <button
             type="button"
@@ -310,7 +297,7 @@ const ManageMembers = () => {
           ></button>
         </div>
         <div className="toast-body">
-          {selectedMember?.firstName} has been archived successfully!
+          Congrats, {selectedMember?.firstName} has been activated!
         </div>
       </div>
     </div>

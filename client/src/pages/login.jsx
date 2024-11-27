@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
-import "./styles.css";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -33,23 +32,26 @@ const Login = () => {
       alert("Please fill in all fields correctly.");
       return;
     }
-  
+
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
+      if (response.status === 429) {
+        alert(data.message); // inform the user that they've hit the limit
+        navigate(`/limit?userId=${data.userId}`);
+        return; // prevent further execution
+      }
       if (response.ok) {
-        const firstName = data.firstName;
-        const userId = data.userId; // retrieve userId
-        if (data.isAdmin) {
-          navigate(`/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`);
-        } else {
-          navigate(`/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`); // pass userId to dash
-        }
+        const { firstName, userId, isAdmin } = data;
+        const redirectUrl = isAdmin
+          ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
+          : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
+        navigate(redirectUrl);
       } else {
         alert(data.message || "Login failed, please try again.");
       }
@@ -57,24 +59,23 @@ const Login = () => {
       console.error("Error during login:", error);
       alert("An error occurred. Please try again.");
     }
-  };  
+  };
 
   const handleGoogleSignIn = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
-    >
+    <div className="d-flex justify-content-center align-items-center">
       <div className="card twotone">
         <div className="row">
           <div className="col dark-background">
             <div className="half">
               <img src="/media/write.webp" className="idlogo" alt="ID Logo" />
               <h5>
-                <b>Login to the <br></br> BukSU Fitness Gym</b>
+                <b>
+                  Login to the <br></br> BukSU Fitness Gym
+                </b>
               </h5>
             </div>
           </div>
@@ -158,7 +159,10 @@ const Login = () => {
                 </div>
 
                 <div className="reqbuttons">
-                  <button onClick={() => navigate("/signup")} className="btn btn-dark backback">
+                  <button
+                    onClick={() => navigate("/disclaimer")}
+                    className="btn btn-dark backback"
+                  >
                     Signup
                   </button>
                   <button type="submit" className="btn btn-primary gotit">

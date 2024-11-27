@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles.css";
+import "../../styles/styles.css";
 
 const IDCheck = () => {
   const [email, setEmail] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [setIsEmailSent] = useState(false);
 
   // handle search for user
   const handleSearch = async (e) => {
@@ -35,17 +35,13 @@ const IDCheck = () => {
         });
 
         // send success email
-        await axios.post("http://localhost:5000/send-success-email", {
+        await axios.post("http://localhost:5000/email/send-success-email", {
           email: result.email,
         });
 
         alert("Yey! User has been activated!");
         setIsEmailSent(true);
       } catch (err) {
-        setError(
-          err.response?.data?.message ||
-            "Whoopsie! An error has occurred. Please try again or check console."
-        );
       }
     }
   };
@@ -133,7 +129,7 @@ const IDCheck = () => {
                   type="button"
                   className="btn btn-primary gotit"
                   onClick={handleContinue}
-                  disabled={!result || isEmailSent}
+                  disabled={!result}
                 >
                   Continue
                 </button>
