@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import React, { useEffect } from "react";
 
 // pages
@@ -11,8 +16,8 @@ import Dash from "./pages/member/Dash";
 import History from "./pages/member/History";
 import Logout from "./pages/member/Logout";
 import Limit from "./pages/member/Limit";
+import Leaderboards from "./pages/leaderboards";
 import IDCheck from "./pages/admin/IDCheck";
-import AdminDash from "./pages/admin/admin";
 import Manage from "./pages/admin/manage";
 import Update from "./pages/admin/update";
 import Admin from "./pages/admin/admin";
@@ -25,34 +30,34 @@ import "./styles/styles.css";
 import { fetchRandomGymImage } from "./assets/unsplashService";
 
 function App() {
+  const [backgroundStyle, setBackgroundStyle] = React.useState({});
+
   useEffect(() => {
     const setDynamicBackground = async () => {
       try {
         const imageUrl = await fetchRandomGymImage();
-
         if (imageUrl) {
           console.log("Fetched image URL:", imageUrl);
-
-          // update the .background-container dynamically
-          const bgContainer = document.querySelector(".background-container");
-          if (bgContainer) {
-            bgContainer.style.backgroundImage = `url(${imageUrl})`;
-          }
+          setBackgroundStyle({
+            backgroundImage: `url(${imageUrl})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          });
         } else {
           console.error("No image URL received, using fallback.");
-          const fallbackUrl = "url('/media/gaussian.png')";
-          const bgContainer = document.querySelector(".background-container");
-          if (bgContainer) {
-            bgContainer.style.backgroundImage = fallbackUrl;
-          }
+          setBackgroundStyle({
+            backgroundImage: "url('/media/gaussian.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          });
         }
       } catch (error) {
         console.error("Failed to fetch or set the background image:", error);
-        const fallbackUrl = "url('/media/gaussian.png')";
-        const bgContainer = document.querySelector(".background-container");
-        if (bgContainer) {
-          bgContainer.style.backgroundImage = fallbackUrl;
-        }
+        setBackgroundStyle({
+          backgroundImage: "url('/media/gaussian.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        });
       }
     };
 
@@ -61,7 +66,9 @@ function App() {
 
   return (
     <Router>
-      <div className="background-container"></div> {/* Background */}
+      <div className="background-container" style={backgroundStyle}>
+        <div className="acrylic-overlay"></div>
+      </div>
       <div className="content-container">
         <div className="gradient-blur">
           <div></div>
@@ -72,14 +79,14 @@ function App() {
           <div></div>
           <div></div>
         </div>
-        <div className="gradient-blurbot">
+        {/* <div className="gradient-blurbot">
           <div></div>
           <div></div>
           <div></div>
           <div></div>
           <div></div>
           <div></div>
-        </div>
+        </div> */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
@@ -90,11 +97,12 @@ function App() {
           <Route path="/history" element={<History />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/limit" element={<Limit />} />
-          <Route path="/idcheck" element={<IDCheck />} />
-          <Route path="/admindashboard" element={<AdminDash />} />
-          <Route path="/manage" element={<Manage />} />
-          <Route path="/manage-signed" element={<Managed />} />
-          <Route path="/update" element={<Update />} />
+          <Route path="/leaderboards" element={<Leaderboards />} />
+          {/* admin routes */}
+          <Route path="/admin/idcheck" element={<IDCheck />} />
+          <Route path="/admin/manage" element={<Manage />} />
+          <Route path="/admin/manage-signed" element={<Managed />} />
+          <Route path="/admin/update" element={<Update />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </div>

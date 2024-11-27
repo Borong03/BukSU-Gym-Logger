@@ -4,7 +4,7 @@ import { Modal, Button } from "react-bootstrap";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "../admin.css";
+import "./admin.css";
 import DataTable from "datatables.net-dt";
 import "datatables.net-dt/css/dataTables.dataTables.css";
 
@@ -12,16 +12,17 @@ const ManageMembers = () => {
   const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // sidebar visible by default
   const navigate = useNavigate();
 
-  // Fetch members from the backend
+  // get members from the backend
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         const response = await fetch("http://localhost:5000/users");
         const data = await response.json();
 
-        // Filter inactive members and format the data
+        // filter inactive members and format the data
         const formattedData = data
           .filter((member) => !member.isActive)
           .map((member) => ({
@@ -39,20 +40,20 @@ const ManageMembers = () => {
     fetchMembers();
   }, []);
 
-  // Initialize DataTable when members are loaded
+  // init DataTable when members are loaded
   useEffect(() => {
     if (members.length > 0) {
       new DataTable("#myTable");
     }
   }, [members]);
 
-  // Show confirmation modal for activation
+  // show confirmation modal for activation
   const handleActivateClick = (member) => {
     setSelectedMember(member); // Set the selected member
     setShowModal(true); // Show modal
   };
 
-  // Confirm activation of a member
+  // confirm activation of a member
   const confirmActivation = async () => {
     try {
       const response = await fetch("http://localhost:5000/users/activate", {
@@ -64,13 +65,13 @@ const ManageMembers = () => {
       });
 
       if (response.ok) {
-        await response.json(); // Parse the JSON response
+        await response.json(); // parse the JSON response
         const updatedMembers = members.filter(
           (member) => member.email !== selectedMember.email
         );
         setMembers(updatedMembers);
 
-        // Dynamically update the toast body
+        // adaptive update the toast body
         const toastBody = document.querySelector(
           "#activationToast .toast-body"
         );
@@ -78,15 +79,15 @@ const ManageMembers = () => {
           toastBody.textContent = `Congrats, ${selectedMember.firstName} has been activated!`;
         }
 
-        // Initialize and show the toast
+        // init and show the toast
         const toastEl = document.getElementById("activationToast");
         const toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // 3 seconds
         toast.show();
 
-        // Close the modal
+        // close the modal
         setShowModal(false);
       } else {
-        const result = await response.json(); // Parse error response
+        const result = await response.json(); // error response
         console.error("Activation error:", result.message);
         alert(result.message || "Error activating member");
       }
@@ -96,32 +97,42 @@ const ManageMembers = () => {
     }
   };
 
-  const handleUpdateClick = (member) => {
-    navigate("/update", { state: { user: member } });
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   return (
-    <div className="d-flex">
+    <div
+      className="d-flex"
+      style={{
+        backgroundImage: `url(${require("../../assets/images/gaussian.png")})`,
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        paddingTop: "-4rem",
+        marginTop: "-4rem",
+      }}
+    >
       {/* Sidebar */}
-      <div className="sidebar" id="sidebar">
+      <div className={`sidebar ${sidebarOpen ? "show" : ""}`} id="sidebar">
         <ul className="nav flex-column">
           <li className="nav-item">
-            <a className="nav-link" href="/">
+            <a className="nav-link" onClick={() => navigate("/admin")}>
               Home
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link active" href="/">
-              Members
-            </a>
+            <a className="nav-link active">Members</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/">
+            <a className="nav-link" onClick={() => navigate("/admin/reports")}>
               Report Generation
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/">
+            <a className="nav-link" onClick={() => navigate("")}>
               Equipments
             </a>
           </li>
@@ -129,23 +140,23 @@ const ManageMembers = () => {
       </div>
 
       {/* Main content */}
-      <div className="content flex-grow-1">
+      <div
+        className={`content flex-grow-1 ${sidebarOpen ? "sidebar-open" : ""}`}
+      >
         <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
           <div className="container-fluid d-flex align-items-center">
             <button
               className="btn btn-primary hamburger"
               type="button"
               aria-label="Toggle sidebar"
-              onClick={() => {
-                document.getElementById("sidebar").classList.toggle("show");
-                document
-                  .querySelector(".content")
-                  .classList.toggle("sidebar-open");
-              }}
+              onClick={toggleSidebar}
             >
               ☰
             </button>
-            <a className="navbar-brand branding ms-2" href="/">
+            <a
+              className="navbar-brand branding ms-2"
+              onClick={() => navigate("/admin")}
+            >
               <img src="../media/logo.png" className="slogo" alt="Logo" />
               BukSU Fitness Gym Admin Panel
             </a>
@@ -170,7 +181,10 @@ const ManageMembers = () => {
 
           <ul className="nav navpill nav-pills">
             <li className="nav-item">
-              <a className="nav-link inactivepill" href="/manage">
+              <a
+                className="nav-link inactivepill"
+                onClick={() => navigate("/admin/manage")}
+              >
                 Activated
               </a>
             </li>
@@ -184,7 +198,7 @@ const ManageMembers = () => {
             </li>
             <li className="nav-item">
               <button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate("/admin/signup")}
                 className="btn circlebuttonsb"
               >
                 <i className="bi bi-plus-lg"></i>
@@ -222,15 +236,7 @@ const ManageMembers = () => {
                     <td>
                       <button
                         type="button"
-                        className="btn btn-primary updatebutton"
-                        onClick={() => handleUpdateClick(member)}
-                      >
-                        Update Details
-                      </button>
-
-                      <button
-                        type="button"
-                        className="btn btn-success goodbutton"
+                        className="btn btn-primary"
                         onClick={() => handleActivateClick(member)}
                       >
                         Activate Member

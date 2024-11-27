@@ -4,9 +4,9 @@
 
 @font-face {
   font-family: "ClashGrotesk-Variable";
-  src: url("../assets/fonts/ClashGrotesk-Variable.woff2") format("woff2"),
-    url("../assets/fonts/ClashGrotesk-Variable.woff") format("woff"),
-    url("../assets/fonts/ClashGrotesk-Variable.ttf") format("truetype");
+  src: url("../../assets/fonts/ClashGrotesk-Variable.woff2") format("woff2"),
+    url("../../assets/fonts/ClashGrotesk-Variable.woff") format("woff"),
+    url("../../assets/fonts/ClashGrotesk-Variable.ttf") format("truetype");
   font-weight: 200 700;
   font-display: swap;
   font-style: normal;
@@ -30,7 +30,6 @@ body {
   margin: 0;
   overflow-x: hidden;
   font-family: "Inter", sans-serif !important;
-  background-image: url("../assets/images/gaussian.png") !important;
 }
 
 .background-container {
@@ -42,12 +41,14 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
-  z-index: -1;
+  z-index: -1; /* Keep it behind everything */
+  -webkit-backdrop-filter: blur(100px) !important;
+  backdrop-filter: blur(100px) !important;
 }
 
 .content-container {
   position: relative;
-  z-index: 0;
+  z-index: 1;
 }
 
 .sidebar {

@@ -1,35 +1,49 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./admin.css";
 
 const AdminPanel = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
   return (
-    <div className="d-flex">
-      {/* sidebar */}
+    <div
+      className="d-flex"
+      style={{
+        backgroundImage: `url(${require("../../assets/images/gaussian.png")})`,
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        backgroundPosition: "center",
+        paddingTop: "-4rem",
+        marginTop: "-4rem",
+      }}
+    >
+      {/* Sidebar */}
       <div className={`sidebar ${sidebarOpen ? "show" : ""}`} id="sidebar">
         <ul className="nav flex-column">
           <li className="nav-item">
-            <a className="nav-link active" href="/">
+            <a className="nav-link active" onClick={() => navigate("")}>
               Home
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/manage">
+            <a className="nav-link" onClick={() => navigate("/admin/manage")}>
               Members
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/">
+            <a className="nav-link" onClick={() => navigate("/admin/reports")}>
               Report Generation
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/">
+            <a className="nav-link" onClick={() => navigate("")}>
               Equipments
             </a>
           </li>
@@ -51,7 +65,10 @@ const AdminPanel = () => {
             >
               ☰
             </button>
-            <a className="navbar-brand branding ms-2" href="/">
+            <a
+              className="navbar-brand branding ms-2"
+              onClick={() => navigate("/admin")}
+            >
               <img src="/media/logo.png" className="slogo" alt="Logo" />
               BukSU Fitness Gym Admin Panel
             </a>
@@ -65,7 +82,7 @@ const AdminPanel = () => {
 
         <div className="contentbody">
           {/* welcome section */}
-          <div className=" container mt-4 welcome">
+          <div className="container mt-4 welcome">
             <img src="/media/hello.webp" className="bigimage" alt="Welcome" />
             <h1 className="headertxt">Good day, Admin!</h1>
             <p>
@@ -78,7 +95,10 @@ const AdminPanel = () => {
           <div className="container mt-4">
             <div className="row widgets justify-content-center">
               <div className="col-md">
-                <div className="newcard mb-4 no-border">
+                <div
+                  className="newcard mb-4 no-border"
+                  onClick={() => navigate("/admin/idcheck")}
+                >
                   <img
                     src="../media/act.png"
                     className="card-img-top act"
@@ -89,15 +109,17 @@ const AdminPanel = () => {
                       <b>Activate a Member</b>
                     </h5>
                     <p className="card-text">
-                      Activate a member's account if they brought their
-                      requirements.
+                      Activate members who submitted requirements.
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="col-md-4">
-                <div className="newcard mb-4 no-border">
+                <div
+                  className="newcard mb-4 no-border"
+                  onClick={() => navigate("/admin/manage")}
+                >
                   <img
                     src="../media/all.png"
                     className="card-img-top"
@@ -115,7 +137,10 @@ const AdminPanel = () => {
               </div>
 
               <div className="col-md-4">
-                <div className="newcard mb-4 no-border">
+                <div
+                  className="newcard mb-4 no-border"
+                  onClick={() => navigate("/admin/reports")}
+                >
                   <img
                     src="../media/equip.png"
                     className="card-img-top"
@@ -123,12 +148,10 @@ const AdminPanel = () => {
                   />
                   <div className="card-body">
                     <h5 className="card-title">
-                      <b>Equipments</b>
+                      <b>Generate Reports</b>
                     </h5>
                     <p className="card-text">
-                      Check equipment inventory.
-                      <br />
-                      <b>[BETA]</b>
+                      Print member attendance logs and other stats.
                     </p>
                   </div>
                 </div>

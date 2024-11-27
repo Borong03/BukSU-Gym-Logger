@@ -14,10 +14,10 @@ export const fetchRandomGymImage = async () => {
         Authorization: `Client-ID ${ACCESS_KEY}`,
       },
     });
-    // Use 'urls.regular' or 'urls.small' for lower resolution
-    return response.data.urls.regular; // Lower resolution, ideal for blurred backgrounds
+
+    return response.data.urls.small; // small kay gamay ra ang size
   } catch (error) {
     console.error("Error fetching random image from Unsplash:", error);
-    return null; // Fallback in case of an error
+    return null; // return to default if naay error
   }
 };

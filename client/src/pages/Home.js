@@ -57,7 +57,11 @@ const Home = () => {
               <button type="button" className="FAQs btn btn-light">
                 FAQs
               </button>
-              <button type="button" className="Visits btn btn-light">
+              <button
+                type="button"
+                className="Visits btn btn-light"
+                onClick={() => navigate("/leaderboards")}
+              >
                 Most Visits
               </button>
               <button

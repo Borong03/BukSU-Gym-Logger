@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import "./admin.css";
 
 const UpdateDetails = () => {
   const location = useLocation();
@@ -29,7 +30,7 @@ const UpdateDetails = () => {
 
       if (response.ok) {
         alert("User updated successfully!");
-        navigate("/manage");
+        navigate(-1);
       } else {
         const errorData = JSON.parse(responseText);
         alert(`Failed to update user: ${errorData.message || "Unknown error"}`);
