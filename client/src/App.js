@@ -77,7 +77,6 @@ function App() {
           <div></div>
           <div></div>
           <div></div>
-          <div></div>
         </div>
         {/* <div className="gradient-blurbot">
           <div></div>

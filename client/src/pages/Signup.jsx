@@ -91,7 +91,7 @@ const Signup = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
+      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
     >
       <div className="card twotone">
         <div className="row">
@@ -101,7 +101,10 @@ const Signup = () => {
               <h5>
                 <b>Register for free!</b>
               </h5>
-              <p>Signup using your BukSU email to enjoy your fitness perks!</p>
+              <p>
+                Signup using your BukSU email <br></br> to enjoy your fitness
+                perks!
+              </p>
             </div>
           </div>
           <div className="col light-background">

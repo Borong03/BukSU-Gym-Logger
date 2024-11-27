@@ -9,7 +9,10 @@ const Limit = () => {
   const userId = queryParams.get("userId");
 
   return (
-    <div className="d-flex justify-content-center align-items-center">
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+    >
       <div className="card cardwhole">
         <div className="row">
           <div className="card-body">

@@ -47,7 +47,7 @@ const UpdateDetails = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ height: "100vh" }}
+      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
     >
       <div className="card twotone">
         <div className="row">

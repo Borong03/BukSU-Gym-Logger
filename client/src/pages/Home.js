@@ -40,7 +40,10 @@ const Home = () => {
   };
 
   return (
-    <div className="main-container">
+    <div
+      className="main-container"
+      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+    >
       <div className="container">
         <div className="row justify-content-center">
           <div className="col">

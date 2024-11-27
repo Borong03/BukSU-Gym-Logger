@@ -22,6 +22,8 @@ const AdminPanel = () => {
         backgroundPosition: "center",
         paddingTop: "-4rem",
         marginTop: "-4rem",
+        paddingTop: "6rem",
+        paddingBottom: "6rem",
       }}
     >
       {/* Sidebar */}

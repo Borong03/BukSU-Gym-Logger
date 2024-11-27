@@ -113,6 +113,8 @@ const ManageMembers = () => {
         minHeight: "100vh",
         paddingTop: "-4rem",
         marginTop: "-4rem",
+        paddingTop: "6rem",
+        paddingBottom: "6rem",
       }}
     >
       {/* Sidebar */}
