@@ -2,16 +2,19 @@ import ReCAPTCHA from "react-google-recaptcha";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
+import Leaderboard from "./leaderboards"; // Import the Leaderboard component (Corrected)
+import FaqAccordion from "./dafaqs"; // Import the FAQ Accordion component (Corrected)
 
 const Home = () => {
-  const [showModal, setShowModal] = useState(false);
+  const [showCaptchaModal, setShowCaptchaModal] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [showFaqModal, setShowFaqModal] = useState(false); // New state for FAQ modal
   const [captchaValue, setCaptchaValue] = useState(null);
   const navigate = useNavigate();
 
   const handleCaptchaChange = async (value) => {
     setCaptchaValue(value);
 
-    // if CAPTCHA is completed successfully, redirect to /login
     if (value) {
       try {
         const response = await fetch("http://localhost:5000/verify-captcha", {
@@ -23,7 +26,6 @@ const Home = () => {
         const data = await response.json();
 
         if (data.message) {
-          // CAPTCHA verified successfully, proceed to login page
           navigate("/login");
         } else {
           alert("CAPTCHA verification failed. Please try again.");
@@ -33,10 +35,6 @@ const Home = () => {
         alert("Error verifying CAPTCHA. Please try again.");
       }
     }
-  };
-
-  const handleGetStartedClick = () => {
-    setShowModal(true);
   };
 
   return (
@@ -57,18 +55,22 @@ const Home = () => {
             </div>
 
             <div className="groupbuttons">
-              <button type="button" className="FAQs btn btn-light">
+              <button
+                type="button"
+                className="FAQs btn btn-light"
+                onClick={() => setShowFaqModal(true)} // Show FAQ modal
+              >
                 FAQs
               </button>
               <button
                 type="button"
                 className="Visits btn btn-light"
-                onClick={() => navigate("/leaderboards")}
+                onClick={() => setShowLeaderboardModal(true)} // Show leaderboard modal
               >
                 Most Visits
               </button>
               <button
-                onClick={handleGetStartedClick}
+                onClick={() => setShowCaptchaModal(true)} // Show CAPTCHA modal
                 type="button"
                 className="gogo btn btn-success"
               >
@@ -101,10 +103,10 @@ const Home = () => {
         </div>
       </div>
 
-      {/* modal for CAPTCHA */}
+      {/* Modal for CAPTCHA */}
       <Modal
-        show={showModal}
-        onHide={() => setShowModal(false)}
+        show={showCaptchaModal}
+        onHide={() => setShowCaptchaModal(false)}
         centered
         backdrop="static"
         keyboard={false}
@@ -119,10 +121,43 @@ const Home = () => {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowCaptchaModal(false)}
+          >
             Close
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Modal for Leaderboard */}
+      <Modal
+        show={showLeaderboardModal}
+        onHide={() => setShowLeaderboardModal(false)}
+        centered
+        dialogClassName="leaderboard-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Most Visits This Week</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Leaderboard /> {/* Embed Leaderboard component */}
+        </Modal.Body>
+      </Modal>
+
+      {/* Modal for FAQs */}
+      <Modal
+        show={showFaqModal}
+        onHide={() => setShowFaqModal(false)}
+        centered
+        dialogClassName="faq-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Frequently Asked Questions</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <FaqAccordion /> {/* Embed FAQ component */}
+        </Modal.Body>
       </Modal>
     </div>
   );
