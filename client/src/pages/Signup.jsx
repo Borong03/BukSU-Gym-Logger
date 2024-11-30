@@ -6,29 +6,15 @@ const Signup = () => {
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [email, setEmail] = useState("");
+  const [localPart, setLocalPart] = useState("");
+  const [domain, setDomain] = useState("@student.buksu.edu.ph");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [emailError, setEmailError] = useState("");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
-  const validateEmail = (e) => {
-    const emailValue = e.target.value;
-    setEmail(emailValue);
-
-    const emailPattern =
-      /^[a-zA-Z0-9._%+-]+@(student\.buksu\.edu\.ph|buksu\.edu\.ph)$/;
-
-    if (!emailPattern.test(emailValue)) {
-      setEmailError("Please use a valid BukSU institutional email.");
-    } else {
-      setEmailError("");
-    }
-  };
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
@@ -36,7 +22,7 @@ const Signup = () => {
 
     // Check strength
     if (value.length < 6) {
-      setPasswordStrength("👎 Password must be atleast 6 characters.");
+      setPasswordStrength("👎 Password must be at least 6 characters.");
     } else if (value.match(/[A-Z]/) && value.match(/[0-9]/)) {
       setPasswordStrength("💖 Your Password is strong like you!");
     } else {
@@ -57,7 +43,9 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (emailError || !passwordMatch || passwordStrength === "Weak") {
+    const fullEmail = `${localPart}${domain}`;
+
+    if (!passwordMatch || passwordStrength === "Weak") {
       alert("Please fix the errors before submitting.");
       return;
     }
@@ -66,12 +54,22 @@ const Signup = () => {
       const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, password }),
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: fullEmail,
+          password,
+        }),
         credentials: "include",
       });
 
       if (response.ok) {
-        navigate("/success");
+        const data = await response.json();
+        if (data.userId) {
+          navigate(`/success?userId=${data.userId}`);
+        } else {
+          alert("Signup successful but no userId returned.");
+        }
       } else {
         const data = await response.json();
         alert(data.message || "Signup failed, please try again.");
@@ -102,7 +100,7 @@ const Signup = () => {
                 <b>Register for free!</b>
               </h5>
               <p>
-                Signup using your BukSU email <br></br> to enjoy your fitness
+                Signup using your BukSU email <br /> to enjoy your fitness
                 perks!
               </p>
             </div>
@@ -159,20 +157,29 @@ const Signup = () => {
                   </div>
                 </div>
 
-                <div className="form-floating mb-3">
-                  <input
-                    type="email"
-                    className={`form-control ${emailError ? "is-invalid" : ""}`}
-                    id="floatingInput"
-                    placeholder="12345678@buksu.edu.ph"
-                    value={email}
-                    onChange={validateEmail}
-                    required
-                  />
-                  <label htmlFor="floatingInput">Institutional Email</label>
-                  {emailError && (
-                    <div className="invalid-feedback">{emailError}</div>
-                  )}
+                <div className="row align-items-center mb-3">
+                  <div className="col-md-5">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Username"
+                      value={localPart}
+                      onChange={(e) => setLocalPart(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-7">
+                    <select
+                      className="form-select"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value)}
+                    >
+                      <option value="@student.buksu.edu.ph">
+                        @student.buksu.edu.ph
+                      </option>
+                      <option value="@buksu.edu.ph">@buksu.edu.ph</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="form-floating mb-3">

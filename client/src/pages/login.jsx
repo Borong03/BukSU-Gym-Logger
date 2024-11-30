@@ -6,30 +6,17 @@ const Login = () => {
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [email, setEmail] = useState("");
+  const [localPart, setLocalPart] = useState("");
+  const [domain, setDomain] = useState("@student.buksu.edu.ph");
   const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
-  const validateEmail = (e) => {
-    const emailValue = e.target.value;
-    setEmail(emailValue);
-
-    // match only @student.buksu.edu.ph or @buksu.edu.ph emails
-    const emailPattern =
-      /^[a-zA-Z0-9._%+-]+@(student\.buksu\.edu\.ph|buksu\.edu\.ph)$/;
-
-    if (!emailPattern.test(emailValue)) {
-      setEmailError("Please use a valid BukSU institutional email.");
-    } else {
-      setEmailError("");
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (emailError || !email || !password) {
-      alert("Please fill in all fields correctly.");
+    const fullEmail = `${localPart}${domain}`;
+
+    if (!localPart || !password) {
+      alert("Please fill in all fields.");
       return;
     }
 
@@ -37,14 +24,14 @@ const Login = () => {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: fullEmail, password }),
       });
 
       const data = await response.json();
       if (response.status === 429) {
-        alert(data.message); // inform the user that they've hit the limit
+        alert(data.message);
         navigate(`/limit?userId=${data.userId}`);
-        return; // prevent further execution
+        return;
       }
       if (response.ok) {
         const { firstName, userId, isAdmin } = data;
@@ -77,7 +64,7 @@ const Login = () => {
               <img src="/media/write.webp" className="idlogo" alt="ID Logo" />
               <h5>
                 <b>
-                  Login to the <br></br> BukSU Fitness Gym
+                  Login to the <br /> BukSU Fitness Gym
                 </b>
               </h5>
             </div>
@@ -103,20 +90,29 @@ const Login = () => {
               </button>
 
               <form onSubmit={handleSubmit}>
-                <div className="form-floating mb-3">
-                  <input
-                    type="email"
-                    className={`form-control ${emailError ? "is-invalid" : ""}`}
-                    id="floatingInput"
-                    placeholder="12345678@buksu.edu.ph"
-                    value={email}
-                    onChange={validateEmail}
-                    required
-                  />
-                  <label htmlFor="floatingInput">Institutional Email</label>
-                  {emailError && (
-                    <div className="invalid-feedback">{emailError}</div>
-                  )}
+                <div className="row align-items-center mb-3">
+                  <div className="col-md-5">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Username"
+                      value={localPart}
+                      onChange={(e) => setLocalPart(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-7">
+                    <select
+                      className="form-select"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value)}
+                    >
+                      <option value="@student.buksu.edu.ph">
+                        @student.buksu.edu.ph
+                      </option>
+                      <option value="@buksu.edu.ph">@buksu.edu.ph</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="form-floating">

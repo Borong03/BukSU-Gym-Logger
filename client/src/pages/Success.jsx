@@ -7,7 +7,7 @@ const Success = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "8rem", paddingBottom: "6rem" }}
     >
       <div className="card cardwhole">
         <div className="row">

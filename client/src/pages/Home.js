@@ -138,7 +138,7 @@ const Home = () => {
         dialogClassName="leaderboard-modal"
       >
         <Modal.Header closeButton>
-          <Modal.Title>Most Visits This Week</Modal.Title>
+          <Modal.Title>Who visited the most?</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Leaderboard /> {/* Embed Leaderboard component */}
