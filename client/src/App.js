@@ -10,6 +10,7 @@ import React, { useEffect } from "react";
 import Home from "./pages/Home";
 import Disclaimer from "./pages/Disclaimer";
 import Login from "./pages/login";
+import Barcode from "./pages/barcode";
 import Signup from "./pages/Signup";
 import Success from "./pages/Success";
 import Dash from "./pages/member/Dash";
@@ -78,18 +79,19 @@ function App() {
           <div></div>
           <div></div>
         </div>
-        {/* <div className="gradient-blurbot">
+        <div className="gradient-blurbot">
           <div></div>
           <div></div>
           <div></div>
           <div></div>
           <div></div>
           <div></div>
-        </div> */}
+        </div>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/barcode" element={<Barcode />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/success" element={<Success />} />
           <Route path="/dash" element={<Dash />} />

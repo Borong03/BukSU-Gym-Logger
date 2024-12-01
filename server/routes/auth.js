@@ -9,18 +9,24 @@ const LoginHistory = require("../models/LoginHistory");
 
 const checkLoginDuration = async (req, res, next) => {
   try {
-    const userId = req.user._id; 
-    const lastLogin = await LoginHistory.findOne({ userId, logoutTime: null }).sort({ loginTime: -1 });
+    const userId = req.user._id;
+    const lastLogin = await LoginHistory.findOne({
+      userId,
+      logoutTime: null,
+    }).sort({ loginTime: -1 });
 
     if (lastLogin) {
       const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
       if (lastLogin.loginTime < fiveHoursAgo) {
         // force logout by updating the record
-        lastLogin.logoutTime = new Date(lastLogin.loginTime.getTime() + 5 * 60 * 60 * 1000);
+        lastLogin.logoutTime = new Date(
+          lastLogin.loginTime.getTime() + 5 * 60 * 60 * 1000
+        );
         await lastLogin.save();
 
         return res.status(403).json({
-          message: "Session expired due to prolonged inactivity. Please log in again.",
+          message:
+            "Session expired due to prolonged inactivity. Please log in again.",
         });
       }
     }
@@ -28,7 +34,9 @@ const checkLoginDuration = async (req, res, next) => {
     next(); // proceed if login is still valid
   } catch (error) {
     console.error("Error checking login duration:", error);
-    res.status(500).json({ message: "An error occurred while validating session." });
+    res
+      .status(500)
+      .json({ message: "An error occurred while validating session." });
   }
 };
 
@@ -48,10 +56,12 @@ router.post("/login", async (req, res) => {
 
     // verify password
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isPasswordCorrect)
+      return res.status(401).json({ message: "Invalid credentials" });
 
     // check if the user's account is activated by admin
-    if (!user.isActive) return res.status(403).json({ message: "User account is not activated" });
+    if (!user.isActive)
+      return res.status(403).json({ message: "User account is not activated" });
 
     // check visits in the last 7 days
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -96,6 +106,62 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.post("/login-barcode", async (req, res) => {
+  const { barcode } = req.body;
+
+  if (!barcode) {
+    return res.status(400).json({ message: "Barcode is required" });
+  }
+
+  try {
+    const user = await User.findOne({
+      email: { $regex: `^${barcode}@`, $options: "i" },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "No user found with the provided barcode" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "User account is not activated" });
+    }
+
+    const openSession = await LoginHistory.findOne({
+      userId: user._id,
+      logoutTime: null, // Check for active sessions
+    });
+
+    if (openSession) {
+      return res.status(200).json({
+        message: "Login successful",
+        firstName: user.firstName,
+        userId: user._id.toString(),
+        isAdmin: user.isAdmin,
+      });
+    }
+
+    // Create a new login entry only if no open session exists
+    await LoginHistory.create({
+      userId: user._id,
+      loginTime: new Date(),
+      ipAddress: req.ip,
+      device: req.get("User-Agent"),
+    });
+
+    res.status(200).json({
+      message: "Login successful",
+      firstName: user.firstName,
+      userId: user._id.toString(),
+      isAdmin: user.isAdmin,
+    });
+  } catch (error) {
+    console.error("Error during barcode login:", error);
+    res.status(500).json({ message: "An error occurred during barcode login" });
+  }
+});
+
 router.get("/visits/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -125,7 +191,8 @@ router.post("/logout", async (req, res) => {
   const { userId } = req.body;
 
   try {
-    if (!userId) return res.status(400).json({ message: "User ID is required" });
+    if (!userId)
+      return res.status(400).json({ message: "User ID is required" });
 
     // find the most recent open session
     const lastLogin = await LoginHistory.findOne({
@@ -134,7 +201,9 @@ router.post("/logout", async (req, res) => {
     }).sort({ loginTime: -1 });
 
     if (!lastLogin) {
-      return res.status(404).json({ message: "No active session found for this user" });
+      return res
+        .status(404)
+        .json({ message: "No active session found for this user" });
     }
 
     // update the logoutTime to close the session

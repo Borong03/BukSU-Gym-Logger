@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
+import * as bootstrap from "bootstrap";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -16,15 +17,25 @@ const Signup = () => {
   const [lastName, setLastName] = useState("");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#signupToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("signupToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  };
+
   const handlePasswordChange = (e) => {
     const value = e.target.value;
     setPassword(value);
 
-    // Check strength
+    // Check password strength
     if (value.length < 6) {
       setPasswordStrength("👎 Password must be at least 6 characters.");
     } else if (value.match(/[A-Z]/) && value.match(/[0-9]/)) {
-      setPasswordStrength("💖 Your Password is strong like you!");
+      setPasswordStrength("💖 Your password is strong like you!");
     } else {
       setPasswordStrength(
         "😐 Hmmm... It can be better. Try adding a number and an uppercase letter."
@@ -46,7 +57,7 @@ const Signup = () => {
     const fullEmail = `${localPart}${domain}`;
 
     if (!passwordMatch || passwordStrength === "Weak") {
-      alert("Please fix the errors before submitting.");
+      showToast("Please fix the errors before submitting.");
       return;
     }
 
@@ -65,18 +76,18 @@ const Signup = () => {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.userId) {
-          navigate(`/success?userId=${data.userId}`);
+        if (data.localPart) {
+          navigate(`/success?localPart=${data.localPart}`); // Use localPart in the URL
         } else {
-          alert("Signup successful but no userId returned.");
+          showToast("Signup successful but no localPart returned.");
         }
       } else {
         const data = await response.json();
-        alert(data.message || "Signup failed, please try again.");
+        showToast(data.message || "Signup failed, please try again.");
       }
     } catch (error) {
       console.error("Error during signup:", error);
-      alert("An error occurred. Please try again.");
+      showToast("An error occurred. Please try again.");
     }
   };
 
@@ -89,7 +100,7 @@ const Signup = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "4rem", paddingBottom: "6rem" }}
     >
       <div className="card twotone">
         <div className="row">
@@ -197,7 +208,7 @@ const Signup = () => {
                     <small
                       className={`text-${
                         passwordStrength ===
-                        "💖 Your Password is strong like you!"
+                        "💖 Your password is strong like you!"
                           ? "success"
                           : passwordStrength ===
                             "😐 Hmmm... It can be better. Try adding a number and an uppercase letter."
@@ -243,10 +254,9 @@ const Signup = () => {
                     className="form-check-label"
                     htmlFor="flexCheckDefault"
                   >
-                    I have read the
+                    I have read the{" "}
                     <b
                       className="text-primary"
-                      style={{ cursor: "pointer" }}
                       onClick={() => setShowTerms(true)}
                     >
                       Terms & Conditions
@@ -254,9 +264,9 @@ const Signup = () => {
                     and
                     <b
                       className="text-primary"
-                      style={{ cursor: "pointer" }}
                       onClick={() => setShowPrivacy(true)}
                     >
+                      {" "}
                       BukSU Data Collection & Privacy
                     </b>
                   </label>
@@ -276,13 +286,13 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* terms modal */}
+      {/* Terms and Privacy Modals */}
       <Modal show={showTerms} onHide={() => setShowTerms(false)} centered>
         <Modal.Header>
           <Modal.Title>Terms & Conditions</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>tbd</p>
+          <p>Terms and conditions go here...</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowTerms(false)}>
@@ -290,7 +300,7 @@ const Signup = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      {/* privacy modal */}
+
       <Modal show={showPrivacy} onHide={() => setShowPrivacy(false)} centered>
         <Modal.Header>
           <Modal.Title>BukSU Data Collection & Privacy</Modal.Title>
@@ -298,8 +308,7 @@ const Signup = () => {
         <Modal.Body>
           <p>
             In compliance with the <b>Data Privacy Act of 2012</b>, BukSU
-            Fitness Gym - Digital Logging System is committed to protect and
-            respect your personal data privacy.
+            Fitness Gym is committed to protecting your data privacy.
           </p>
         </Modal.Body>
         <Modal.Footer>
@@ -308,6 +317,33 @@ const Signup = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Toast for Signup Notifications */}
+      <div
+        className="toast align-items-center"
+        id="signupToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
+      </div>
     </div>
   );
 };

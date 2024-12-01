@@ -1,22 +1,34 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 import "./admin.css";
 
 const UpdateDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = location.state?.user || {}; // recieve data from previous
+  const user = location.state?.user || {}; // Receive data from previous
 
-  // variables to store user data
+  // Variables to store user data
   const [firstName, setFirstName] = useState(user.firstName || "");
   const [lastName, setLastName] = useState(user.lastName || "");
   const [email, setEmail] = useState(user.email || "");
 
-  // handle submittion
+  // Show toast notification
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#updateToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("updateToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  };
+
+  // Handle submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Data to be sent:", { email, firstName, lastName }); // data format
+    console.log("Data to be sent:", { email, firstName, lastName }); // Data format
 
     try {
       const response = await fetch(`http://localhost:5000/users/update-name`, {
@@ -26,17 +38,19 @@ const UpdateDetails = () => {
       });
 
       const responseText = await response.text();
-      console.log("Response:", responseText); // log
+      console.log("Response:", responseText); // Log
 
       if (response.ok) {
-        alert("User updated successfully!");
-        navigate(-1);
+        showToast("User updated successfully!");
+        setTimeout(() => navigate(-1), 3000); // Redirect after 3 seconds
       } else {
         const errorData = JSON.parse(responseText);
-        alert(`Failed to update user: ${errorData.message || "Unknown error"}`);
+        showToast(
+          `Failed to update user: ${errorData.message || "Unknown error"}`
+        );
       }
     } catch (error) {
-      alert(`Error: ${error.message}`);
+      showToast(`Error: ${error.message}`);
     }
   };
 
@@ -47,7 +61,7 @@ const UpdateDetails = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "7rem", paddingBottom: "6rem" }}
     >
       <div className="card twotone">
         <div className="row">
@@ -68,7 +82,7 @@ const UpdateDetails = () => {
             <form onSubmit={handleSubmit}>
               <div
                 className="row"
-                style={{ marginTop: "6rem", marginBottom: "6rem" }}
+                style={{ marginTop: "7rem", marginBottom: "6rem" }}
               >
                 <div className="col-md-6">
                   <div className="form-floating mb-3">
@@ -129,6 +143,33 @@ const UpdateDetails = () => {
             </form>
           </div>
         </div>
+      </div>
+
+      {/* Toast for Update Notifications */}
+      <div
+        className="toast align-items-center"
+        id="updateToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
       </div>
     </div>
   );

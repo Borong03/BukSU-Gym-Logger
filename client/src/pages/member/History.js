@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 import "../../styles/styles.css";
 import DataTable from "datatables.net-dt";
 import "datatables.net-dt/css/dataTables.dataTables.css";
+import $ from "jquery";
 
 const History = () => {
   const [history, setHistory] = useState([]);
@@ -10,10 +12,9 @@ const History = () => {
   const location = useLocation();
 
   const queryParams = new URLSearchParams(location.search);
-  const userId = queryParams.get("userId"); // Get userId from query parameter
+  const userId = queryParams.get("userId");
 
   useEffect(() => {
-    // get visit history when component mounts
     const fetchHistory = async () => {
       try {
         const response = await fetch(
@@ -23,11 +24,24 @@ const History = () => {
         if (response.ok) {
           setHistory(data);
         } else {
-          alert(data.message || "Failed to fetch history.");
+          const toastBody = document.querySelector("#historyToast .toast-body");
+          if (toastBody) {
+            toastBody.textContent = data.message || "Failed to fetch history.";
+          }
+          const toastEl = document.getElementById("historyToast");
+          const toast = new bootstrap.Toast(toastEl);
+          toast.show();
         }
       } catch (error) {
         console.error("Error fetching visit history:", error);
-        alert("An error occurred while fetching visit history.");
+        const toastBody = document.querySelector("#historyToast .toast-body");
+        if (toastBody) {
+          toastBody.textContent =
+            "An error occurred while fetching visit history.";
+        }
+        const toastEl = document.getElementById("historyToast");
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
       }
     };
 
@@ -37,9 +51,16 @@ const History = () => {
   }, [userId]);
 
   useEffect(() => {
-    // init DataTable only when history data is available
     if (history.length > 0) {
-      new DataTable("#myTable", {
+      const tableElement = "#myTable";
+
+      // Check if the DataTable has already been initialized
+      if ($.fn.DataTable.isDataTable(tableElement)) {
+        $(tableElement).DataTable().destroy();
+      }
+
+      // Reinitialize the DataTable
+      new DataTable(tableElement, {
         paging: true,
         searching: false,
         info: false,
@@ -124,6 +145,33 @@ const History = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Toast for Notifications */}
+      <div
+        className="toast align-items-center"
+        id="historyToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
       </div>
     </div>
   );

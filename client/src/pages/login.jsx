@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
+import * as bootstrap from "bootstrap";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,12 +12,22 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#loginToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("loginToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fullEmail = `${localPart}${domain}`;
 
     if (!localPart || !password) {
-      alert("Please fill in all fields.");
+      showToast("Please fill in all fields.");
       return;
     }
 
@@ -28,11 +39,13 @@ const Login = () => {
       });
 
       const data = await response.json();
+
       if (response.status === 429) {
-        alert(data.message);
+        showToast(data.message);
         navigate(`/limit?userId=${data.userId}`);
         return;
       }
+
       if (response.ok) {
         const { firstName, userId, isAdmin } = data;
         const redirectUrl = isAdmin
@@ -40,11 +53,11 @@ const Login = () => {
           : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
         navigate(redirectUrl);
       } else {
-        alert(data.message || "Login failed, please try again.");
+        showToast(data.message || "Login failed, please try again.");
       }
     } catch (error) {
       console.error("Error during login:", error);
-      alert("An error occurred. Please try again.");
+      showToast("An error occurred. Please try again.");
     }
   };
 
@@ -55,13 +68,17 @@ const Login = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "3.5rem", paddingBottom: "6rem" }}
     >
       <div className="card twotone">
         <div className="row">
           <div className="col dark-background">
-            <div className="half">
-              <img src="/media/write.webp" className="idlogo" alt="ID Logo" />
+            <div className="halfhome">
+              <img
+                src="/media/logo.png"
+                className="idlogo"
+                alt="homelogo Logo"
+              />
               <h5>
                 <b>
                   Login to the <br /> BukSU Fitness Gym
@@ -81,13 +98,35 @@ const Login = () => {
                     src="media/dummy.svg"
                     alt="Google Logo"
                   />
+                </div>
+              </button>
+              <button
+                className="google-signin-button"
+                onClick={() => navigate("/barcode")}
+                style={{ marginTop: "-2rem" }}
+              >
+                <div className="image-container">
                   <img
                     className="svgs"
-                    src="media/divider2.svg"
-                    alt="Divider"
+                    src="media/barcode.svg"
+                    alt="Barcode page"
                   />
                 </div>
               </button>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  className="svgs centerpls"
+                  style={{ width: "80%", maxWidth: "300px" }}
+                  src="media/divider2.svg"
+                  alt="Divider"
+                />
+              </div>
 
               <form onSubmit={handleSubmit}>
                 <div className="row align-items-center mb-3">
@@ -205,6 +244,33 @@ const Login = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Toast for Login Notifications */}
+      <div
+        className="toast align-items-center"
+        id="loginToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
+      </div>
     </div>
   );
 };

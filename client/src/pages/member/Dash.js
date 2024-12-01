@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 import "../../styles/styles.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const Dash = () => {
   const navigate = useNavigate();
@@ -24,14 +26,35 @@ const Dash = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message);
+        // Update toast message and show it
+        const toastBody = document.querySelector("#logoutToast .toast-body");
+        if (toastBody) {
+          toastBody.textContent = data.message;
+        }
+        const toastEl = document.getElementById("logoutToast");
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
         navigate("/login");
       } else {
-        alert(data.message || "Logout failed, please try again.");
+        const toastBody = document.querySelector("#logoutToast .toast-body");
+        if (toastBody) {
+          toastBody.textContent =
+            data.message || "Logout failed, please try again.";
+        }
+        const toastEl = document.getElementById("logoutToast");
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
       }
     } catch (error) {
       console.error("Logout error:", error);
-      alert("An error occurred during logout.");
+      const toastBody = document.querySelector("#logoutToast .toast-body");
+      if (toastBody) {
+        toastBody.textContent = "An error occurred during logout.";
+      }
+      const toastEl = document.getElementById("logoutToast");
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
     }
   };
 
@@ -44,11 +67,9 @@ const Dash = () => {
         if (response.ok) {
           setVisits(data.visits);
 
-          // redirect to /limit if visits exceed 3
           if (data.visits >= 4) {
             navigate(`/limit?userId=${userId}`);
           } else {
-            // log time-in data only if the user is within the limit
             await logTimeIn();
           }
         } else {
@@ -132,6 +153,33 @@ const Dash = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Toast for Notifications */}
+      <div
+        className="toast align-items-center"
+        id="logoutToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
       </div>
     </div>
   );

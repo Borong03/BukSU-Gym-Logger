@@ -13,10 +13,10 @@ const bcrypt = require("bcrypt");
 const app = express();
 
 const authRoutes = require("./routes/auth");
-const User = require('./models/User');
-const LoginHistory = require('./models/LoginHistory');
+const User = require("./models/User");
+const LoginHistory = require("./models/LoginHistory");
 const historyRoutes = require("./routes/history");
-const captchaRoutes = require('./routes/captchaRoutes');
+const captchaRoutes = require("./routes/captchaRoutes");
 const emailServiceRoutes = require("./routes/emailService");
 
 // user schema and model
@@ -42,7 +42,9 @@ const requireAdmin = async (req, res, next) => {
       return res.status(500).json({ message: "Error fetching user data" });
     }
   } else {
-    return res.status(401).json({ message: "Please log in to access this page" });
+    return res
+      .status(401)
+      .json({ message: "Please log in to access this page" });
   }
 };
 
@@ -56,19 +58,22 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log(err));
 
-  app.post("/login", async (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+app.post("/login", async (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+    if (!user) return res.redirect("/"); // back to login if failed
+
+    req.logIn(user, (err) => {
       if (err) return next(err);
-      if (!user) return res.redirect("/"); // back to login if failed
-  
-      req.logIn(user, (err) => {
-        if (err) return next(err);
-        // convert objectId to string
-        res.redirect(`http://localhost:3000/dash?name=${encodeURIComponent(user.firstName)}&userId=${user._id.toString()}`);
-      });
-    })(req, res, next);
-  });
-  
+      // convert objectId to string
+      res.redirect(
+        `http://localhost:3000/dash?name=${encodeURIComponent(
+          user.firstName
+        )}&userId=${user._id.toString()}`
+      );
+    });
+  })(req, res, next);
+});
 
 app.use(express.json());
 app.use(
@@ -138,8 +143,16 @@ app.post("/signup", async (req, res) => {
       password: hashedPassword, // hashed password
     });
     await newUser.save();
-    res.status(201).json({ message: "User registered successfully" });
+
+    // Extract local part of the email (before the '@')
+    const localPart = email.split("@")[0];
+
+    // Return success message with localPart
+    res
+      .status(201)
+      .json({ message: "User registered successfully", localPart });
   } catch (err) {
+    console.error("Error during signup:", err);
     res.status(500).json({ message: "Error registering user" });
   }
 });

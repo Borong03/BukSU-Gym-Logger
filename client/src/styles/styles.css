@@ -269,6 +269,11 @@ p {
   margin-left: 3rem;
 }
 
+.halfhome {
+  margin-top: 3rem;
+  margin-left: 3rem;
+}
+
 .idlogo {
   margin-left: -0.5rem !important;
   margin-bottom: 1rem;
@@ -297,6 +302,10 @@ p {
 .requirements {
   width: 80%;
   margin-bottom: 1rem;
+}
+
+.centerpls {
+  align-items: center !important;
 }
 
 .requirements {
@@ -413,8 +422,8 @@ p {
   margin: 0;
   cursor: pointer;
   outline: none;
-  display: inline-flex; /* or block if you want it full width */
-  align-items: center; /* Center items vertically */
+  display: inline-flex;
+  align-items: center;
 }
 
 .google-signin-button:focus {

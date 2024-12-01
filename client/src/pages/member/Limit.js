@@ -11,7 +11,7 @@ const Limit = () => {
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "7.5rem", paddingBottom: "6rem" }}
     >
       <div className="card cardwhole">
         <div className="row">

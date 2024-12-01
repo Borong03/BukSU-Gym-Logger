@@ -12,17 +12,26 @@ const ManageMembers = () => {
   const [members, setMembers] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // sidebar visible by default
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
-  // get members from the backend
+  // Show toast notification
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#activationToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("activationToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  };
+
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         const response = await fetch("http://localhost:5000/users");
         const data = await response.json();
 
-        // filter inactive members and format the data
         const formattedData = data
           .filter((member) => !member.isActive)
           .map((member) => ({
@@ -34,26 +43,24 @@ const ManageMembers = () => {
         setMembers(formattedData);
       } catch (error) {
         console.error("Error fetching members:", error);
+        showToast("Failed to load members. Please try again.");
       }
     };
 
     fetchMembers();
   }, []);
 
-  // init DataTable when members are loaded
   useEffect(() => {
     if (members.length > 0) {
       new DataTable("#myTable");
     }
   }, [members]);
 
-  // show confirmation modal for activation
   const handleActivateClick = (member) => {
-    setSelectedMember(member); // Set the selected member
-    setShowModal(true); // Show modal
+    setSelectedMember(member);
+    setShowModal(true);
   };
 
-  // confirm activation of a member
   const confirmActivation = async () => {
     try {
       const response = await fetch("http://localhost:5000/users/activate", {
@@ -65,35 +72,22 @@ const ManageMembers = () => {
       });
 
       if (response.ok) {
-        await response.json(); // parse the JSON response
+        await response.json();
         const updatedMembers = members.filter(
           (member) => member.email !== selectedMember.email
         );
         setMembers(updatedMembers);
 
-        // adaptive update the toast body
-        const toastBody = document.querySelector(
-          "#activationToast .toast-body"
-        );
-        if (toastBody) {
-          toastBody.textContent = `Congrats, ${selectedMember.firstName} has been activated!`;
-        }
-
-        // init and show the toast
-        const toastEl = document.getElementById("activationToast");
-        const toast = new bootstrap.Toast(toastEl, { delay: 3000 }); // 3 seconds
-        toast.show();
-
-        // close the modal
+        showToast(`Congrats, ${selectedMember.firstName} has been activated!`);
         setShowModal(false);
       } else {
-        const result = await response.json(); // error response
+        const result = await response.json();
         console.error("Activation error:", result.message);
-        alert(result.message || "Error activating member");
+        showToast(result.message || "Error activating member.");
       }
     } catch (error) {
       console.error("Error activating member:", error);
-      alert("An unexpected error occurred. Please try again.");
+      showToast("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -111,9 +105,7 @@ const ManageMembers = () => {
         backgroundAttachment: "fixed",
         backgroundPosition: "center",
         minHeight: "100vh",
-        paddingTop: "-4rem",
-        marginTop: "-4rem",
-        paddingTop: "6rem",
+        paddingTop: "2rem",
         paddingBottom: "6rem",
       }}
     >
@@ -298,9 +290,7 @@ const ManageMembers = () => {
             aria-label="Close"
           ></button>
         </div>
-        <div className="toast-body">
-          Congrats, {selectedMember?.firstName} has been activated!
-        </div>
+        <div className="toast-body"></div>
       </div>
     </div>
   );

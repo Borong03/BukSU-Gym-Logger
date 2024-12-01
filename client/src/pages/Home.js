@@ -2,13 +2,14 @@ import ReCAPTCHA from "react-google-recaptcha";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
-import Leaderboard from "./leaderboards"; // Import the Leaderboard component (Corrected)
-import FaqAccordion from "./dafaqs"; // Import the FAQ Accordion component (Corrected)
+import * as bootstrap from "bootstrap";
+import Leaderboard from "./leaderboards";
+import FaqAccordion from "./dafaqs";
 
 const Home = () => {
   const [showCaptchaModal, setShowCaptchaModal] = useState(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
-  const [showFaqModal, setShowFaqModal] = useState(false); // New state for FAQ modal
+  const [showFaqModal, setShowFaqModal] = useState(false);
   const [captchaValue, setCaptchaValue] = useState(null);
   const navigate = useNavigate();
 
@@ -28,19 +29,29 @@ const Home = () => {
         if (data.message) {
           navigate("/login");
         } else {
-          alert("CAPTCHA verification failed. Please try again.");
+          showToast("CAPTCHA verification failed. Please try again.");
         }
       } catch (error) {
         console.error("Error verifying CAPTCHA:", error);
-        alert("Error verifying CAPTCHA. Please try again.");
+        showToast("Error verifying CAPTCHA. Please try again.");
       }
     }
+  };
+
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#captchaToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("captchaToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
   };
 
   return (
     <div
       className="main-container"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "4.5rem", paddingBottom: "6rem" }}
     >
       <div className="container">
         <div className="row justify-content-center">
@@ -49,7 +60,12 @@ const Home = () => {
 
             <div className="welcomepage">
               <p>Welcome to the</p>
-              <h1>
+              <h1
+                style={{
+                  marginTop: "-1rem",
+                  textShadow: "0px 0px 10px rgba(0, 0, 0, 0.25)",
+                }}
+              >
                 <b>BukSU Fitness Gym</b>
               </h1>
             </div>
@@ -58,19 +74,19 @@ const Home = () => {
               <button
                 type="button"
                 className="FAQs btn btn-light"
-                onClick={() => setShowFaqModal(true)} // Show FAQ modal
+                onClick={() => setShowFaqModal(true)}
               >
                 FAQs
               </button>
               <button
                 type="button"
                 className="Visits btn btn-light"
-                onClick={() => setShowLeaderboardModal(true)} // Show leaderboard modal
+                onClick={() => setShowLeaderboardModal(true)}
               >
                 Most Visits
               </button>
               <button
-                onClick={() => setShowCaptchaModal(true)} // Show CAPTCHA modal
+                onClick={() => setShowCaptchaModal(true)}
                 type="button"
                 className="gogo btn btn-success"
               >
@@ -141,7 +157,7 @@ const Home = () => {
           <Modal.Title>Who visited the most?</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Leaderboard /> {/* Embed Leaderboard component */}
+          <Leaderboard />
         </Modal.Body>
       </Modal>
 
@@ -156,9 +172,36 @@ const Home = () => {
           <Modal.Title>Frequently Asked Questions</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <FaqAccordion /> {/* Embed FAQ component */}
+          <FaqAccordion />
         </Modal.Body>
       </Modal>
+
+      {/* Toast for CAPTCHA Notifications */}
+      <div
+        className="toast align-items-center"
+        id="captchaToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
+      </div>
     </div>
   );
 };

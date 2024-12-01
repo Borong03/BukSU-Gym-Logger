@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../../styles/styles.css";
+import * as bootstrap from "bootstrap";
 
 const IDCheck = () => {
   const [email, setEmail] = useState("");
@@ -9,7 +10,18 @@ const IDCheck = () => {
   const [error, setError] = useState(null);
   const [setIsEmailSent] = useState(false);
 
-  // handle search for user
+  // Show toast notification
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#idCheckToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("idCheckToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  };
+
+  // Handle search for user
   const handleSearch = async (e) => {
     e.preventDefault();
 
@@ -25,36 +37,47 @@ const IDCheck = () => {
     }
   };
 
-  // handle activating user and sending success email
+  // Handle activating user and sending success email
   const handleContinue = async () => {
     if (result) {
       try {
-        // isActive status to true
+        // Activate the user
         await axios.put("http://localhost:5000/users/activate", {
           email: result.email,
         });
 
-        // send success email
+        // Send success email
         await axios.post("http://localhost:5000/email/send-success-email", {
           email: result.email,
         });
 
-        alert("Yey! User has been activated!");
+        showToast("Yey! User has been activated!");
         setIsEmailSent(true);
-      } catch (err) {}
+      } catch (err) {
+        showToast("Failed to activate user. Please try again.");
+      }
     }
   };
 
   return (
     <div
       className="d-flex justify-content-center align-items-center"
-      style={{ paddingTop: "6rem", paddingBottom: "6rem" }}
+      style={{ paddingTop: "5.5rem", paddingBottom: "6rem" }}
     >
       <div className="card twotone">
         <div className="row">
           <div className="col dark-background">
-            <div className="half">
-              <img src="media/search.webp" className="idlogo" alt="ID Logo" />
+            <div
+              className="half"
+              style={{
+                marginBottom: "10rem",
+              }}
+            >
+              <img
+                src="../media/search.webp"
+                className="idlogo"
+                alt="ID Logo"
+              />
               <h5>
                 <b>Activate a Member</b>
               </h5>
@@ -136,6 +159,33 @@ const IDCheck = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Toast for IDCheck Notifications */}
+      <div
+        className="toast align-items-center"
+        id="idCheckToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
       </div>
     </div>
   );
