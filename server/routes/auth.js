@@ -63,35 +63,33 @@ router.post("/login", async (req, res) => {
     if (!user.isActive)
       return res.status(403).json({ message: "User account is not activated" });
 
-    // check visits in the last 7 days
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const visitCount = await LoginHistory.countDocuments({
-      userId: user._id,
-      loginTime: { $gte: oneWeekAgo },
-    });
-
-    // enforce weekly visit limit BEFORE logging a new session
-    if (visitCount >= 3) {
-      return res.status(429).json({
-        message: "Weekly visit limit reached.",
-        userId: user._id.toString(),
-      });
-    }
-
-    // check for an open session
-    const openSession = await LoginHistory.findOne({
-      userId: user._id,
-      logoutTime: null, // no logout time indicates an open session
-    });
-
-    if (!openSession) {
-      // log the visit only if no open session exists
-      await LoginHistory.create({
+    if (!user.isAdmin) {
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const visitCount = await LoginHistory.countDocuments({
         userId: user._id,
-        loginTime: new Date(),
-        ipAddress: req.ip,
-        device: req.get("User-Agent"),
+        loginTime: { $gte: oneWeekAgo },
       });
+
+      if (visitCount > 3) {
+        return res.status(429).json({
+          message: "Weekly visit limit reached.",
+          userId: user._id.toString(),
+        });
+      }
+
+      const openSession = await LoginHistory.findOne({
+        userId: user._id,
+        logoutTime: null,
+      });
+
+      if (!openSession) {
+        await LoginHistory.create({
+          userId: user._id,
+          loginTime: new Date(),
+          ipAddress: req.ip,
+          device: req.get("User-Agent"),
+        });
+      }
     }
 
     return res.status(200).json({
@@ -128,27 +126,21 @@ router.post("/login-barcode", async (req, res) => {
       return res.status(403).json({ message: "User account is not activated" });
     }
 
-    const openSession = await LoginHistory.findOne({
-      userId: user._id,
-      logoutTime: null, // Check for active sessions
-    });
-
-    if (openSession) {
-      return res.status(200).json({
-        message: "Login successful",
-        firstName: user.firstName,
-        userId: user._id.toString(),
-        isAdmin: user.isAdmin,
+    if (!user.isAdmin) {
+      const openSession = await LoginHistory.findOne({
+        userId: user._id,
+        logoutTime: null,
       });
-    }
 
-    // Create a new login entry only if no open session exists
-    await LoginHistory.create({
-      userId: user._id,
-      loginTime: new Date(),
-      ipAddress: req.ip,
-      device: req.get("User-Agent"),
-    });
+      if (!openSession) {
+        await LoginHistory.create({
+          userId: user._id,
+          loginTime: new Date(),
+          ipAddress: req.ip,
+          device: req.get("User-Agent"),
+        });
+      }
+    }
 
     res.status(200).json({
       message: "Login successful",

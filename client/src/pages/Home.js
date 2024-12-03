@@ -103,6 +103,9 @@ const Home = () => {
                 <b>News & Updates</b>
               </div>
               <div className="card-body">
+                <div class="alert alert-success" role="alert">
+                  There are 3 out of 10 people inside!
+                </div>
                 <iframe
                   src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fweb.facebook.com%2Fprofile.php%3Fid%3D61550652162170&tabs=timeline&width=500&height=300&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=925221692879371"
                   width="500"

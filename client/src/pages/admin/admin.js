@@ -11,6 +11,12 @@ const AdminPanel = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
   return (
     <div
       className="d-flex"
@@ -75,7 +81,11 @@ const AdminPanel = () => {
               BukSU Fitness Gym Admin Panel
             </a>
             <div className="ms-auto">
-              <button type="button" className="btn btn-danger">
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleLogout}
+              >
                 Log out
               </button>
             </div>

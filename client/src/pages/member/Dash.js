@@ -16,6 +16,9 @@ const Dash = () => {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const handleLogout = async () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("isGoogleAuthenticated");
+    localStorage.removeItem("role");
     try {
       const response = await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
@@ -26,7 +29,6 @@ const Dash = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Update toast message and show it
         const toastBody = document.querySelector("#logoutToast .toast-body");
         if (toastBody) {
           toastBody.textContent = data.message;
@@ -67,7 +69,7 @@ const Dash = () => {
         if (response.ok) {
           setVisits(data.visits);
 
-          if (data.visits >= 4) {
+          if (data.visits > 3) {
             navigate(`/limit?userId=${userId}`);
           } else {
             await logTimeIn();
@@ -105,6 +107,26 @@ const Dash = () => {
     }
   }, [userId, API_URL, navigate]);
 
+  const handleLogAnotherUser = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("isGoogleAuthenticated");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
+  // automatically navigate to home page after 30 seconds
+  useEffect(() => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("isGoogleAuthenticated");
+    localStorage.removeItem("role");
+    const timeoutId = setTimeout(() => {
+      navigate("/");
+    }, 30000); // 30 seconds
+
+    // cleanup on component unmount
+    return () => clearTimeout(timeoutId);
+  }, [navigate]);
+
   return (
     <div
       className="d-flex justify-content-center align-items-center"
@@ -141,7 +163,7 @@ const Dash = () => {
                   View Visit History
                 </button>
                 <button
-                  onClick={() => navigate("/login")}
+                  onClick={handleLogAnotherUser}
                   className="btn btn-dark middle"
                 >
                   Log another User

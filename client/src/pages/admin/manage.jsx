@@ -99,11 +99,17 @@ const ManageMembers = () => {
   };
 
   const handleUpdateClick = (member) => {
-    navigate("/update", { state: { user: member } });
+    navigate("/admin/update", { state: { user: member } });
   };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("role");
+    navigate("/login");
   };
 
   return (
@@ -164,7 +170,11 @@ const ManageMembers = () => {
               BukSU Fitness Gym Admin Panel
             </a>
             <div className="ms-auto">
-              <button type="button" className="btn btn-danger">
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleLogout}
+              >
                 Log out
               </button>
             </div>

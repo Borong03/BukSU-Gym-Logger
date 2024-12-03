@@ -48,6 +48,11 @@ const Login = () => {
 
       if (response.ok) {
         const { firstName, userId, isAdmin } = data;
+
+        // update localStorage for authentication
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("role", isAdmin ? "admin" : "user");
+
         const redirectUrl = isAdmin
           ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
           : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
@@ -61,8 +66,14 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+  const handleGoogleSignIn = async () => {
+    try {
+      window.location.href = "http://localhost:5000/auth/google";
+      localStorage.setItem("isGoogleAuthenticated", "true"); // store Google login state
+      localStorage.setItem("isAuthenticated", "true"); // general authentication
+    } catch (error) {
+      console.error("Google Sign-In error:", error);
+    }
   };
 
   return (
@@ -198,7 +209,7 @@ const Login = () => {
 
                 <div className="reqbuttons">
                   <button
-                    onClick={() => navigate("/disclaimer")}
+                    onClick={() => navigate("/signup")}
                     className="btn btn-dark backback"
                   >
                     Signup
@@ -219,7 +230,7 @@ const Login = () => {
           <Modal.Title>Terms & Conditions</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>to be discussed...</p>
+          <p>Terms and conditions go here...</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowTerms(false)}>

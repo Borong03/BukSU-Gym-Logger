@@ -57,8 +57,7 @@ const Leaderboard = () => {
 
   const getData = async () => {
     try {
-      // Fetch data from the backend API
-      const response = await fetch("http://localhost:5000/api/leaderboard"); // Ensure the API URL is correct
+      const response = await fetch("http://localhost:5000/api/leaderboard");
       if (!response.ok) {
         throw new Error("Failed to fetch leaderboard data");
       }
@@ -69,23 +68,23 @@ const Leaderboard = () => {
       setLeaders(data);
     } catch (error) {
       console.error("Error fetching leaderboard data:", error);
-      setLeaders([]); // Clear data on error
+      setLeaders([]);
     }
   };
 
   useEffect(() => {
     getData();
-    const interval = setInterval(getData, 180000); // Refresh every 3 minutes
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    const interval = setInterval(getData, 180000); // refresh every 3 minutes
+    return () => clearInterval(interval);
   }, []);
 
-  // Helper to convert HH:MM format to total minutes
+  // helper to convert HH:MM format to total minutes
   const toMinutes = (time) => {
     const [hours, minutes] = time.split(":").map(Number);
     return hours * 60 + minutes;
   };
 
-  // Determine the max total time in minutes for relative bar widths
+  // determine the max total time in minutes for relative bar widths
   const maxTime = leaders.length > 0 ? toMinutes(leaders[0].totalTime) : 1;
 
   return (

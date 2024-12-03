@@ -24,6 +24,10 @@ import Update from "./pages/admin/update";
 import Admin from "./pages/admin/admin";
 import Managed from "./pages/admin/manageSigned";
 
+// components
+import ProtectedRoute from "./components/ProtectedRoute";
+import NotFound from "./pages/NotFound";
+
 // stylesheets
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -88,23 +92,85 @@ function App() {
           <div></div>
         </div>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/login" element={<Login />} />
           <Route path="/barcode" element={<Barcode />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/success" element={<Success />} />
-          <Route path="/dash" element={<Dash />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/limit" element={<Limit />} />
           <Route path="/leaderboards" element={<Leaderboards />} />
-          {/* admin routes */}
-          <Route path="/admin/idcheck" element={<IDCheck />} />
-          <Route path="/admin/manage" element={<Manage />} />
-          <Route path="/admin/manage-signed" element={<Managed />} />
-          <Route path="/admin/update" element={<Update />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/history" element={<History />} />
+
+          {/* User routes */}
+          <Route
+            path="/dash"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <Dash />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/logout"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <Logout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/limit"
+            element={
+              <ProtectedRoute requiredRole="user">
+                <Limit />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin routes */}
+          <Route
+            path="/admin/idcheck"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <IDCheck />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/manage"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Manage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/manage-signed"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Managed />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/update"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Update />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+          {/* catch-all route for 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>
