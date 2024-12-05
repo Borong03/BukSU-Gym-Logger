@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as bootstrap from "bootstrap";
 import "../../styles/styles.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { jwtDecode } from "jwt-decode"; // Correct import for jwt-decode
 
 const Dash = () => {
   const navigate = useNavigate();
@@ -15,14 +16,44 @@ const Dash = () => {
   const [loading, setLoading] = useState(true);
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  // Check for JWT and authenticate on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+
+    if (!token) {
+      navigate("/login");
+    } else {
+      try {
+        const decoded = jwtDecode(token); // Correct function usage (jwtDecode)
+
+        // Check if the token is expired
+        const currentTime = Date.now() / 1000;
+        if (decoded.exp < currentTime) {
+          // Token is expired, remove it and navigate to login
+          localStorage.removeItem("jwtToken");
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Token decoding error:", error);
+        localStorage.removeItem("jwtToken");
+        navigate("/login");
+      }
+    }
+  }, [navigate]);
+
   const handleLogout = async () => {
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("isGoogleAuthenticated");
     localStorage.removeItem("role");
+    localStorage.removeItem("jwtToken"); // Remove JWT token on logout
+
     try {
       const response = await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+        },
         body: JSON.stringify({ userId }),
       });
 
@@ -60,10 +91,30 @@ const Dash = () => {
     }
   };
 
+  const handleViewHistory = () => {
+    navigate(
+      `/history?name=${encodeURIComponent(firstName)}&userId=${userId}`,
+      {
+        state: { from: location },
+      }
+    );
+  };
+
   useEffect(() => {
     const fetchVisits = async () => {
+      const token = localStorage.getItem("jwtToken");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const response = await fetch(`${API_URL}/auth/visits/${userId}`);
+        const response = await fetch(`${API_URL}/auth/visits/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
 
         if (response.ok) {
@@ -85,10 +136,15 @@ const Dash = () => {
     };
 
     const logTimeIn = async () => {
+      const token = localStorage.getItem("jwtToken");
+
       try {
         const response = await fetch(`${API_URL}/auth/log-time-in`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ userId }),
         });
 
@@ -111,19 +167,15 @@ const Dash = () => {
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("isGoogleAuthenticated");
     localStorage.removeItem("role");
+    localStorage.removeItem("jwtToken");
     navigate("/login");
   };
 
-  // automatically navigate to home page after 30 seconds
   useEffect(() => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("isGoogleAuthenticated");
-    localStorage.removeItem("role");
     const timeoutId = setTimeout(() => {
       navigate("/");
-    }, 30000); // 30 seconds
+    }, 30000);
 
-    // cleanup on component unmount
     return () => clearTimeout(timeoutId);
   }, [navigate]);
 
@@ -157,7 +209,7 @@ const Dash = () => {
 
               <div className="reqbuttons">
                 <button
-                  onClick={() => navigate(`/history?userId=${userId}`)}
+                  onClick={handleViewHistory}
                   className="btn btn-primary left"
                 >
                   View Visit History
@@ -177,7 +229,6 @@ const Dash = () => {
         </div>
       </div>
 
-      {/* Toast for Notifications */}
       <div
         className="toast align-items-center"
         id="logoutToast"

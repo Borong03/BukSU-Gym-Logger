@@ -12,6 +12,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+  // Show toast notification with a message
   const showToast = (message) => {
     const toastBody = document.querySelector("#loginToast .toast-body");
     if (toastBody) {
@@ -22,10 +23,12 @@ const Login = () => {
     toast.show();
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fullEmail = `${localPart}${domain}`;
 
+    // Validate form fields
     if (!localPart || !password) {
       showToast("Please fill in all fields.");
       return;
@@ -40,22 +43,26 @@ const Login = () => {
 
       const data = await response.json();
 
+      // Handle rate limiting (429)
       if (response.status === 429) {
         showToast(data.message);
         navigate(`/limit?userId=${data.userId}`);
         return;
       }
 
+      // Successful login
       if (response.ok) {
-        const { firstName, userId, isAdmin } = data;
+        const { firstName, userId, isAdmin, token } = data;
 
-        // update localStorage for authentication
+        // Store JWT token and user role in localStorage
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("role", isAdmin ? "admin" : "user");
+        localStorage.setItem("jwtToken", token);
 
         const redirectUrl = isAdmin
           ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
           : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
+
         navigate(redirectUrl);
       } else {
         showToast(data.message || "Login failed, please try again.");
@@ -66,11 +73,12 @@ const Login = () => {
     }
   };
 
+  // Handle Google sign-in
   const handleGoogleSignIn = async () => {
     try {
-      window.location.href = "http://localhost:5000/auth/google";
-      localStorage.setItem("isGoogleAuthenticated", "true"); // store Google login state
-      localStorage.setItem("isAuthenticated", "true"); // general authentication
+      window.location.href = `${API_URL}/auth/google`; // Ensure backend endpoint matches
+      localStorage.setItem("isGoogleAuthenticated", "true"); // Store Google login state
+      localStorage.setItem("isAuthenticated", "true"); // General authentication flag
     } catch (error) {
       console.error("Google Sign-In error:", error);
     }
@@ -124,13 +132,7 @@ const Login = () => {
                   />
                 </div>
               </button>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
+              <div className="divider">
                 <img
                   className="svgs centerpls"
                   style={{ width: "80%", maxWidth: "300px" }}

@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { useEffect } from "react";
 
 // pages
@@ -92,7 +87,6 @@ function App() {
           <div></div>
         </div>
         <Routes>
-          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/login" element={<Login />} />
@@ -101,8 +95,6 @@ function App() {
           <Route path="/leaderboards" element={<Leaderboards />} />
           <Route path="/success" element={<Success />} />
           <Route path="/history" element={<History />} />
-
-          {/* User routes */}
           <Route
             path="/dash"
             element={
@@ -127,8 +119,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* Admin routes */}
           <Route
             path="/admin/idcheck"
             element={
@@ -169,7 +159,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* catch-all route for 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

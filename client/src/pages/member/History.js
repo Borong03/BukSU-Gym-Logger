@@ -14,6 +14,18 @@ const History = () => {
   const queryParams = new URLSearchParams(location.search);
   const userId = queryParams.get("userId");
 
+  const goBack = () => {
+    navigate(-1);
+  };
+
+  useEffect(() => {
+    console.log("Location state in History:", location.state); // Debug
+  }, [location]);
+
+  useEffect(() => {
+    console.log("Authenticated:", localStorage.getItem("isAuthenticated"));
+  }, []);
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -68,10 +80,6 @@ const History = () => {
       });
     }
   }, [history]);
-
-  const goBack = () => {
-    navigate(-1);
-  };
 
   return (
     <div

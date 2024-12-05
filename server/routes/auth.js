@@ -1,11 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const jwtSecret = process.env.JWT_SECRET || "4ureyes0nly";
 const User = require("../models/User");
 const passport = require("passport");
 const bcrypt = require("bcrypt");
 const LoginHistory = require("../models/LoginHistory");
+const { generateTokens } = require("../utils/tokenService");
+const authenticateJWT = require("../utils/authMiddleware");
+
+require("dotenv").config();
+const jwtSecret = process.env.JWT_SECRET;
+console.log("JWT Secret:", jwtSecret); // Debugging the JWT Secret
 
 const checkLoginDuration = async (req, res, next) => {
   try {
@@ -41,9 +46,14 @@ const checkLoginDuration = async (req, res, next) => {
 };
 
 // middleware for protected routes
-router.get("/protected-route", checkLoginDuration, (req, res) => {
-  res.send("You have access to this protected route!");
-});
+router.get(
+  "/protected-route",
+  authenticateJWT,
+  checkLoginDuration,
+  (req, res) => {
+    res.send("You have access to this protected route!");
+  }
+);
 
 // login auth
 router.post("/login", async (req, res) => {
@@ -63,6 +73,7 @@ router.post("/login", async (req, res) => {
     if (!user.isActive)
       return res.status(403).json({ message: "User account is not activated" });
 
+    // if the user is not an admin, enforce weekly login visit limit
     if (!user.isAdmin) {
       const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const visitCount = await LoginHistory.countDocuments({
@@ -70,6 +81,7 @@ router.post("/login", async (req, res) => {
         loginTime: { $gte: oneWeekAgo },
       });
 
+      // if the user has exceeded the login limit within a week, deny login
       if (visitCount > 3) {
         return res.status(429).json({
           message: "Weekly visit limit reached.",
@@ -77,11 +89,13 @@ router.post("/login", async (req, res) => {
         });
       }
 
+      // check if there's an open session for the user
       const openSession = await LoginHistory.findOne({
         userId: user._id,
         logoutTime: null,
       });
 
+      // if no open session, create a new login history entry
       if (!openSession) {
         await LoginHistory.create({
           userId: user._id,
@@ -92,8 +106,17 @@ router.post("/login", async (req, res) => {
       }
     }
 
+    // generate JWT Token
+    const token = jwt.sign(
+      { _id: user._id, email: user.email, isAdmin: user.isAdmin },
+      jwtSecret,
+      { expiresIn: "5h" } // token expiry time set to 5 hours
+    );
+
+    // return success response with token and user info
     return res.status(200).json({
       message: "Login successful",
+      token,
       isAdmin: user.isAdmin,
       firstName: user.firstName,
       userId: user._id.toString(),
@@ -104,6 +127,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// login-barcode with JWT
 router.post("/login-barcode", async (req, res) => {
   const { barcode } = req.body;
 
@@ -142,8 +166,16 @@ router.post("/login-barcode", async (req, res) => {
       }
     }
 
+    // Generate JWT Token
+    const token = jwt.sign(
+      { _id: user._id, email: user.email, isAdmin: user.isAdmin },
+      jwtSecret,
+      { expiresIn: "5h" }
+    );
+
     res.status(200).json({
       message: "Login successful",
+      token,
       firstName: user.firstName,
       userId: user._id.toString(),
       isAdmin: user.isAdmin,
@@ -178,8 +210,8 @@ router.get("/visits/:userId", async (req, res) => {
   }
 });
 
-// logout auth
-router.post("/logout", async (req, res) => {
+// logout auth with JWT
+router.post("/logout", authenticateJWT, async (req, res) => {
   const { userId } = req.body;
 
   try {
@@ -252,76 +284,26 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
+// callback route for Google OAuth
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
-  async (req, res) => {
-    const userId = req.user._id;
-
-    try {
-      // Check visits in the last 7 days
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const visitCount = await LoginHistory.countDocuments({
-        userId,
-        loginTime: { $gte: oneWeekAgo }, // Only visits within the last 7 days
-      });
-
-      // Redirect if the user has exceeded the visit limit
-      if (visitCount >= 3) {
-        return res.redirect(`http://localhost:3000/limit?userId=${userId}`);
-      }
-
-      // Log the visit if the user is under the limit
-      const existingSession = await LoginHistory.findOne({
-        userId,
-        logoutTime: null, // Open session
-      });
-
-      if (!existingSession) {
-        await LoginHistory.create({
-          userId,
-          loginTime: new Date(),
-          ipAddress: req.ip,
-          device: req.get("User-Agent"),
-        });
-      }
-
-      // redirect to dash with the user's first name and userId
-      res.redirect(
-        `http://localhost:3000/dash?name=${req.user.firstName}&userId=${req.user._id}`
-      );
-    } catch (error) {
-      console.error("Error during Google callback:", error);
-      res.status(500).json({ message: "An error occurred during login." });
-    }
+  (req, res) => {
+    const user = req.user;
+    // Generate JWT Token for Google login
+    const token = jwt.sign(
+      { _id: user._id, email: user.email, isAdmin: user.isAdmin },
+      jwtSecret,
+      { expiresIn: "5h" }
+    );
+    res.json({
+      message: "Login successful",
+      token,
+      firstName: user.firstName,
+      userId: user._id.toString(),
+      isAdmin: user.isAdmin,
+    });
   }
 );
-
-// route to search user by email with partial matching
-router.get("/search", async (req, res) => {
-  const { email } = req.query;
-
-  if (!email) {
-    return res.status(400).json({ message: "Email is required" });
-  }
-
-  try {
-    // use regular expression for partial email matching
-    const user = await User.findOne({
-      email: { $regex: email, $options: "i" },
-    });
-    if (user) {
-      res.json({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      });
-    } else {
-      res.status(404).json({ message: "User not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Error searching for user" });
-  }
-});
 
 module.exports = router;
