@@ -211,7 +211,7 @@ const Login = () => {
 
                 <div className="reqbuttons">
                   <button
-                    onClick={() => navigate("/signup")}
+                    onClick={() => navigate("/disclaimer")}
                     className="btn btn-dark backback"
                   >
                     Signup

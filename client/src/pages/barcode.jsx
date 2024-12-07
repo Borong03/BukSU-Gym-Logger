@@ -45,8 +45,13 @@ const Barcode = () => {
       }
 
       const data = await response.json();
-      const { firstName, userId, isAdmin } = data;
+      const { firstName, userId, isAdmin, token } = data;
 
+      // Save token and user role in localStorage
+      localStorage.setItem("jwtToken", token); // Save JWT token
+      localStorage.setItem("role", isAdmin ? "admin" : "user"); // Save role
+
+      // Redirect to appropriate dashboard
       const redirectUrl = isAdmin
         ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
         : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;

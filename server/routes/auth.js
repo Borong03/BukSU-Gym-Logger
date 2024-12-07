@@ -82,7 +82,7 @@ router.post("/login", async (req, res) => {
       });
 
       // if the user has exceeded the login limit within a week, deny login
-      if (visitCount > 3) {
+      if (visitCount >= 3) {
         return res.status(429).json({
           message: "Weekly visit limit reached.",
           userId: user._id.toString(),
@@ -95,7 +95,7 @@ router.post("/login", async (req, res) => {
         logoutTime: null,
       });
 
-      // if no open session, create a new login history entry
+      // create a new login history entry only if no open session exists
       if (!openSession) {
         await LoginHistory.create({
           userId: user._id,
@@ -131,31 +131,51 @@ router.post("/login", async (req, res) => {
 router.post("/login-barcode", async (req, res) => {
   const { barcode } = req.body;
 
+  // validate barcode input
   if (!barcode) {
     return res.status(400).json({ message: "Barcode is required" });
   }
 
   try {
+    // Search for a user by matching their email with the barcode pattern
     const user = await User.findOne({
       email: { $regex: `^${barcode}@`, $options: "i" },
     });
 
+    // If no user is found
     if (!user) {
       return res
         .status(404)
         .json({ message: "No user found with the provided barcode" });
     }
 
+    // Check if the user account is active
     if (!user.isActive) {
       return res.status(403).json({ message: "User account is not activated" });
     }
 
+    // Log login time for non-admin users
     if (!user.isAdmin) {
+      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const visitCount = await LoginHistory.countDocuments({
+        userId: user._id,
+        loginTime: { $gte: oneWeekAgo },
+      });
+
+      // Deny login if weekly visit limit is exceeded
+      if (visitCount >= 3) {
+        return res.status(429).json({
+          message: "Weekly visit limit reached.",
+          userId: user._id.toString(),
+        });
+      }
+
       const openSession = await LoginHistory.findOne({
         userId: user._id,
         logoutTime: null,
       });
 
+      // Create a new login history entry only if no open session exists
       if (!openSession) {
         await LoginHistory.create({
           userId: user._id,
@@ -166,13 +186,14 @@ router.post("/login-barcode", async (req, res) => {
       }
     }
 
-    // Generate JWT Token
+    // Generate a JWT token
     const token = jwt.sign(
       { _id: user._id, email: user.email, isAdmin: user.isAdmin },
       jwtSecret,
       { expiresIn: "5h" }
     );
 
+    // Send a successful response with the token and user details
     res.status(200).json({
       message: "Login successful",
       token,
@@ -296,14 +317,42 @@ router.get(
       jwtSecret,
       { expiresIn: "5h" }
     );
-    res.json({
-      message: "Login successful",
-      token,
-      firstName: user.firstName,
-      userId: user._id.toString(),
-      isAdmin: user.isAdmin,
-    });
+
+    // Redirect to frontend with token and user details
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const redirectUrl = `${frontendUrl}/dash?token=${token}&name=${encodeURIComponent(
+      user.firstName
+    )}&userId=${user._id}&isAdmin=${user.isAdmin}`;
+
+    res.redirect(redirectUrl);
   }
 );
+
+// route to search user by email with partial matching
+router.get("/search", async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    // use regular expression for partial email matching
+    const user = await User.findOne({
+      email: { $regex: email, $options: "i" },
+    });
+    if (user) {
+      res.json({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      });
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error searching for user" });
+  }
+});
 
 module.exports = router;

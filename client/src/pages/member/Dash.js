@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as bootstrap from "bootstrap";
 import "../../styles/styles.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { jwtDecode } from "jwt-decode"; // Correct import for jwt-decode
+import { jwtDecode } from "jwt-decode";
 
 const Dash = () => {
   const navigate = useNavigate();
@@ -21,38 +21,43 @@ const Dash = () => {
     const token = localStorage.getItem("jwtToken");
 
     if (!token) {
+      console.error("No token found. Redirecting to login.");
       navigate("/login");
-    } else {
-      try {
-        const decoded = jwtDecode(token); // Correct function usage (jwtDecode)
+      return;
+    }
 
-        // Check if the token is expired
-        const currentTime = Date.now() / 1000;
-        if (decoded.exp < currentTime) {
-          // Token is expired, remove it and navigate to login
-          localStorage.removeItem("jwtToken");
-          navigate("/login");
-        }
-      } catch (error) {
-        console.error("Token decoding error:", error);
-        localStorage.removeItem("jwtToken");
+    try {
+      const decoded = jwtDecode(token);
+
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime) {
+        console.error("Token expired. Clearing local storage and redirecting.");
+        localStorage.clear();
         navigate("/login");
+        return;
       }
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      localStorage.clear();
+      navigate("/login");
     }
   }, [navigate]);
 
   const handleLogout = async () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("isGoogleAuthenticated");
-    localStorage.removeItem("role");
-    localStorage.removeItem("jwtToken"); // Remove JWT token on logout
+    const token = localStorage.getItem("jwtToken");
+
+    if (!token) {
+      console.error("No token found. Redirecting to login.");
+      navigate("/login");
+      return;
+    }
 
     try {
       const response = await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ userId }),
       });
@@ -60,34 +65,16 @@ const Dash = () => {
       const data = await response.json();
 
       if (response.ok) {
-        const toastBody = document.querySelector("#logoutToast .toast-body");
-        if (toastBody) {
-          toastBody.textContent = data.message;
-        }
-        const toastEl = document.getElementById("logoutToast");
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-
+        console.log("Logout successful:", data.message);
+        localStorage.clear();
         navigate("/login");
       } else {
-        const toastBody = document.querySelector("#logoutToast .toast-body");
-        if (toastBody) {
-          toastBody.textContent =
-            data.message || "Logout failed, please try again.";
-        }
-        const toastEl = document.getElementById("logoutToast");
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
+        console.error("Logout failed:", data.message);
+        showToast(data.message || "Logout failed. Please try again.");
       }
     } catch (error) {
-      console.error("Logout error:", error);
-      const toastBody = document.querySelector("#logoutToast .toast-body");
-      if (toastBody) {
-        toastBody.textContent = "An error occurred during logout.";
-      }
-      const toastEl = document.getElementById("logoutToast");
-      const toast = new bootstrap.Toast(toastEl);
-      toast.show();
+      console.error("Error during logout:", error);
+      showToast("An error occurred during logout.");
     }
   };
 
@@ -105,6 +92,7 @@ const Dash = () => {
       const token = localStorage.getItem("jwtToken");
 
       if (!token) {
+        console.error("No token found. Redirecting to login.");
         navigate("/login");
         return;
       }
@@ -115,6 +103,7 @@ const Dash = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+
         const data = await response.json();
 
         if (response.ok) {
@@ -127,9 +116,11 @@ const Dash = () => {
           }
         } else {
           console.error("Failed to fetch visits:", data.message);
+          showToast(data.message || "Failed to fetch visits.");
         }
       } catch (error) {
         console.error("Error fetching visits:", error);
+        showToast("An error occurred while fetching visits.");
       } finally {
         setLoading(false);
       }
@@ -164,11 +155,18 @@ const Dash = () => {
   }, [userId, API_URL, navigate]);
 
   const handleLogAnotherUser = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("isGoogleAuthenticated");
-    localStorage.removeItem("role");
-    localStorage.removeItem("jwtToken");
+    localStorage.clear();
     navigate("/login");
+  };
+
+  const showToast = (message) => {
+    const toastBody = document.querySelector("#logoutToast .toast-body");
+    if (toastBody) {
+      toastBody.textContent = message;
+    }
+    const toastEl = document.getElementById("logoutToast");
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
   };
 
   useEffect(() => {
