@@ -7,7 +7,7 @@ export const fetchRandomGymImage = async () => {
   try {
     const response = await axios.get(UNSPLASH_API_URL, {
       params: {
-        query: "gradient",
+        query: "mesh gradient",
         orientation: "landscape",
       },
       headers: {

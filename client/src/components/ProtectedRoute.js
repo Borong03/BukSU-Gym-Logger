@@ -1,58 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Correct import for jwt-decode
+import { jwtDecode } from "jwt-decode";
 
-// ProtectedRoute component
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const token = localStorage.getItem("jwtToken"); // Make sure to use the correct key
-  const role = localStorage.getItem("role") || "guest"; // Default role to 'guest' if not found
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // If there's no token, redirect to login page
-  if (!token) {
-    console.log("No token found, redirecting to login.");
-    return <Navigate to="/login" />;
+  useEffect(() => {
+    const checkAuthentication = () => {
+      const token = localStorage.getItem("jwtToken");
+
+      if (token) {
+        try {
+          const decodedToken = jwtDecode(token);
+          const expirationDate = decodedToken.exp * 1000; // convert to milisecond
+
+          if (expirationDate > Date.now()) {
+            const role =
+              localStorage.getItem("isAdmin") === "true" ? "admin" : "user";
+
+            if (!requiredRole || role === requiredRole) {
+              setIsAuthenticated(true);
+            } else {
+              console.warn(
+                `Role mismatch. Required: ${requiredRole}, Found: ${role}`
+              );
+            }
+          } else {
+            console.warn("Token expired. Clearing localStorage.");
+            localStorage.clear();
+          }
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          localStorage.clear();
+        }
+      } else {
+        console.warn("No token found in localStorage.");
+      }
+
+      setIsLoading(false);
+    };
+
+    checkAuthentication();
+  }, [requiredRole]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // show loading state while checking authentication
   }
 
-  let decodedToken = null;
-
-  try {
-    // Decode the token
-    decodedToken = jwtDecode(token);
-    console.log("Decoded token:", decodedToken); // Log the decoded token
-  } catch (error) {
-    console.error("Error decoding token:", error);
-    return <Navigate to="/login" />;
-  }
-
-  // Ensure the token has a valid expiration field
-  if (!decodedToken || !decodedToken.exp) {
-    console.error("Token does not have an expiration field.");
-    return <Navigate to="/login" />;
-  }
-
-  // Get expiration date from the token and check if it has expired
-  const expirationDate = decodedToken.exp * 1000;
-  console.log("Current Date:", new Date());
-  console.log("Token Expiration Date:", new Date(expirationDate));
-
-  const isExpired = expirationDate < new Date().getTime();
-  if (isExpired) {
-    console.log("Token has expired, redirecting to login.");
-    localStorage.removeItem("jwtToken"); // Optionally clear expired token
-    return <Navigate to="/login" />;
-  }
-
-  // Log the current user role
-  console.log("User role:", role);
-
-  // If role is required, check if it matches the stored role
-  if (requiredRole && role !== requiredRole) {
-    console.log(`Role mismatch: Expected ${requiredRole}, found ${role}`);
-    return <Navigate to="/login" />;
-  }
-
-  // If everything checks out, render the children (protected content)
-  return children;
+  return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
 export default ProtectedRoute;

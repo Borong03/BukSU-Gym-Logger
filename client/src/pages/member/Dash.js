@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as bootstrap from "bootstrap";
 import "../../styles/styles.css";
@@ -8,30 +8,58 @@ import { jwtDecode } from "jwt-decode";
 const Dash = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const firstName = queryParams.get("name") || "User";
-  const userId = queryParams.get("userId");
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search]
+  );
 
   const [visits, setVisits] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState(30); // countdown timer in seconds
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  // Check for JWT and authenticate on component mount
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
+    const tokenFromQuery = queryParams.get("token");
+    const nameFromQuery = queryParams.get("name");
+    const userIdFromQuery = queryParams.get("userId");
+    const isAdminFromQuery = queryParams.get("isAdmin");
 
-    if (!token) {
-      console.error("No token found. Redirecting to login.");
+    const tokenFromLocalStorage = localStorage.getItem("jwtToken");
+    const userIdFromLocalStorage = localStorage.getItem("userId");
+
+    if (tokenFromQuery && userIdFromQuery) {
+      console.log("Storing token and userId from query params.");
+
+      // save token and user details to localStorage
+      localStorage.setItem("jwtToken", tokenFromQuery);
+      localStorage.setItem("name", nameFromQuery || "User");
+      localStorage.setItem("userId", userIdFromQuery);
+      localStorage.setItem(
+        "isAdmin",
+        isAdminFromQuery === "true" ? "true" : "false"
+      );
+
+      // clean up query params
+      queryParams.delete("token");
+      queryParams.delete("name");
+      queryParams.delete("userId");
+      queryParams.delete("isAdmin");
+      navigate(location.pathname, { replace: true });
+    } else if (!tokenFromLocalStorage || !userIdFromLocalStorage) {
+      console.error("Missing token or userId. Redirecting to login.");
+      localStorage.clear();
       navigate("/login");
       return;
     }
 
+    // validate token from localStorage
     try {
+      const token = localStorage.getItem("jwtToken");
       const decoded = jwtDecode(token);
-
       const currentTime = Date.now() / 1000;
+
       if (decoded.exp < currentTime) {
-        console.error("Token expired. Clearing local storage and redirecting.");
+        console.error("Token expired. Clearing localStorage and redirecting.");
         localStorage.clear();
         navigate("/login");
         return;
@@ -41,13 +69,31 @@ const Dash = () => {
       localStorage.clear();
       navigate("/login");
     }
-  }, [navigate]);
+  }, [navigate, location.pathname, queryParams]);
+
+  useEffect(() => {
+    if (!loading) {
+      const interval = setInterval(() => {
+        setCountdown((prevCountdown) => {
+          if (prevCountdown <= 1) {
+            clearInterval(interval);
+            navigate("/");
+            return 0;
+          }
+          return prevCountdown - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [loading, navigate]);
 
   const handleLogout = async () => {
     const token = localStorage.getItem("jwtToken");
+    const userId = localStorage.getItem("userId");
 
-    if (!token) {
-      console.error("No token found. Redirecting to login.");
+    if (!token || !userId) {
+      console.error("Missing token or userId. Redirecting to login.");
       navigate("/login");
       return;
     }
@@ -79,20 +125,28 @@ const Dash = () => {
   };
 
   const handleViewHistory = () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      console.error("No userId found. Redirecting to login.");
+      navigate("/login");
+      return;
+    }
+
     navigate(
-      `/history?name=${encodeURIComponent(firstName)}&userId=${userId}`,
-      {
-        state: { from: location },
-      }
+      `/history?name=${encodeURIComponent(
+        localStorage.getItem("name")
+      )}&userId=${userId}`,
+      { state: { from: location } }
     );
   };
 
   useEffect(() => {
     const fetchVisits = async () => {
       const token = localStorage.getItem("jwtToken");
+      const userId = localStorage.getItem("userId");
 
-      if (!token) {
-        console.error("No token found. Redirecting to login.");
+      if (!token || !userId) {
+        console.error("Missing token or userId. Redirecting to login.");
         navigate("/login");
         return;
       }
@@ -107,12 +161,11 @@ const Dash = () => {
         const data = await response.json();
 
         if (response.ok) {
-          setVisits(data.visits);
-
-          if (data.visits > 3) {
+          if (data.visits >= 3) {
             navigate(`/limit?userId=${userId}`);
           } else {
             await logTimeIn();
+            setVisits(data.visits);
           }
         } else {
           console.error("Failed to fetch visits:", data.message);
@@ -128,6 +181,7 @@ const Dash = () => {
 
     const logTimeIn = async () => {
       const token = localStorage.getItem("jwtToken");
+      const userId = localStorage.getItem("userId");
 
       try {
         const response = await fetch(`${API_URL}/auth/log-time-in`, {
@@ -149,10 +203,8 @@ const Dash = () => {
       }
     };
 
-    if (userId) {
-      fetchVisits();
-    }
-  }, [userId, API_URL, navigate]);
+    fetchVisits();
+  }, [API_URL, navigate]);
 
   const handleLogAnotherUser = () => {
     localStorage.clear();
@@ -169,14 +221,6 @@ const Dash = () => {
     toast.show();
   };
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      navigate("/");
-    }, 30000);
-
-    return () => clearTimeout(timeoutId);
-  }, [navigate]);
-
   return (
     <div
       className="d-flex justify-content-center align-items-center"
@@ -188,7 +232,7 @@ const Dash = () => {
             <div className="successcard">
               <img src="media/hello.webp" className="done" alt="Done" />
               <h5 className="card-title">
-                <b>Hello, {firstName}!</b>
+                <b>Hello, {localStorage.getItem("name") || "User"}!</b>
               </h5>
               <p className="card-text">
                 {loading ? (
@@ -199,8 +243,9 @@ const Dash = () => {
                     <b>{visits} out of 3 visits per week</b> have been used.{" "}
                     <br />
                     <br />
-                    You can now click <b>Log another user</b> and enjoy the
-                    Fitness Gym amenities.
+                    Please enjoy the fitness gym amenities. 💪
+                    <br />
+                    Redirecting to the Home page in <b>{countdown} seconds</b>.
                   </>
                 )}
               </p>

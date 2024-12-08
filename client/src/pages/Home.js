@@ -1,5 +1,5 @@
+import React, { useState, useEffect } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
-import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import * as bootstrap from "bootstrap";
@@ -11,12 +11,45 @@ const Home = () => {
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [showFaqModal, setShowFaqModal] = useState(false);
   const [captchaValue, setCaptchaValue] = useState(null);
+  const [currentMembers, setCurrentMembers] = useState(0);
+  const [maxCapacity] = useState(10); // max capacity
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCurrentMembers = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/misc/current-members"
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentMembers(data.count);
+        } else {
+          console.error("Failed to fetch current members.");
+        }
+      } catch (error) {
+        console.error("Error fetching current members:", error);
+      }
+    };
+
+    fetchCurrentMembers();
+    const interval = setInterval(fetchCurrentMembers, 30000); // refresh every 30 seconds
+    return () => clearInterval(interval); // clean up interval on component unmount
+  }, []);
 
   const handleCaptchaChange = async (value) => {
     setCaptchaValue(value);
 
     if (value) {
+      // check gym capacity before verifying CAPTCHA
+      if (currentMembers >= maxCapacity) {
+        showToast(
+          "The gym has reached its maximum capacity. Please try again later."
+        );
+        setShowCaptchaModal(false); // close CAPTCHA modal
+        return;
+      }
+
       try {
         const response = await fetch("http://localhost:5000/verify-captcha", {
           method: "POST",
@@ -103,9 +136,11 @@ const Home = () => {
                 <b>News & Updates</b>
               </div>
               <div className="card-body">
-                <div class="alert alert-success" role="alert">
-                  There are 3 out of 10 people inside!
+                {/* current gym members count */}
+                <div className="alert alert-success" role="alert">
+                  There are {currentMembers} out of {maxCapacity} people inside!
                 </div>
+                {/* facebook updates */}
                 <iframe
                   src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fweb.facebook.com%2Fprofile.php%3Fid%3D61550652162170&tabs=timeline&width=500&height=300&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=925221692879371"
                   width="500"

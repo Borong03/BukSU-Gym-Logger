@@ -28,7 +28,6 @@ const Login = () => {
     e.preventDefault();
     const fullEmail = `${localPart}${domain}`;
 
-    // Validate form fields
     if (!localPart || !password) {
       showToast("Please fill in all fields.");
       return;
@@ -43,21 +42,20 @@ const Login = () => {
 
       const data = await response.json();
 
-      // Handle rate limiting (429)
       if (response.status === 429) {
         showToast(data.message);
         navigate(`/limit?userId=${data.userId}`);
         return;
       }
 
-      // Successful login
       if (response.ok) {
         const { firstName, userId, isAdmin, token } = data;
 
-        // Store JWT token and user role in localStorage
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("role", isAdmin ? "admin" : "user");
+        // Save all required data in localStorage
         localStorage.setItem("jwtToken", token);
+        localStorage.setItem("userId", userId);
+        localStorage.setItem("name", firstName);
+        localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
 
         const redirectUrl = isAdmin
           ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`

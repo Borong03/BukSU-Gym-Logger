@@ -226,11 +226,11 @@ const AdminPanel = () => {
                         </h5>
                         <div className="mt-auto">
                           <p className="card-text">
-                            There are # members inside the gym right now.
+                            There are 3 members inside the gym right now.
                           </p>
                           <p className="card-text">
                             <small className="text-body-secondary">
-                              Updated # mins ago based on last login.
+                              Updated 2 mins ago based on last login.
                             </small>
                           </p>
                         </div>

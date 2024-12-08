@@ -5,6 +5,7 @@ import React, { useEffect } from "react";
 import Home from "./pages/Home";
 import Disclaimer from "./pages/Disclaimer";
 import Login from "./pages/login";
+import Auth from "./pages/authenticator";
 import Barcode from "./pages/barcode";
 import Signup from "./pages/Signup";
 import Success from "./pages/Success";
@@ -90,6 +91,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/authenticator" element={<Auth />} />
           <Route path="/barcode" element={<Barcode />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/leaderboards" element={<Leaderboards />} />
