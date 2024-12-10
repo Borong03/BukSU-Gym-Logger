@@ -1,11 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./admin.css";
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [recentSignup, setRecentSignup] = useState(null);
+  const [currentMembers, setCurrentMembers] = useState(0);
   const navigate = useNavigate();
+
+  // Fetch recent signup and current members
+  useEffect(() => {
+    const fetchRecentSignup = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/misc/recent-signup"
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setRecentSignup(data);
+        } else {
+          console.error("Failed to fetch recent signup data.");
+        }
+      } catch (error) {
+        console.error("Error fetching recent signup data:", error);
+      }
+    };
+
+    const fetchCurrentMembers = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/misc/current-members"
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentMembers(data.count);
+        } else {
+          console.error("Failed to fetch current members.");
+        }
+      } catch (error) {
+        console.error("Error fetching current members:", error);
+      }
+    };
+
+    fetchRecentSignup();
+    fetchCurrentMembers();
+
+    // Update current members every 30 seconds
+    const interval = setInterval(fetchCurrentMembers, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -26,8 +70,6 @@ const AdminPanel = () => {
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
         backgroundPosition: "center",
-        paddingTop: "-4rem",
-        marginTop: "-4rem",
         paddingTop: "6rem",
         paddingBottom: "6rem",
       }}
@@ -93,7 +135,7 @@ const AdminPanel = () => {
         </nav>
 
         <div className="contentbody">
-          {/* welcome section */}
+          {/* Welcome Section */}
           <div className="container mt-4 welcome">
             <img src="/media/hello.webp" className="bigimage" alt="Welcome" />
             <h1 className="headertxt">Good day, Admin!</h1>
@@ -103,7 +145,7 @@ const AdminPanel = () => {
             </p>
           </div>
 
-          {/* widgets */}
+          {/* Widgets */}
           <div className="container mt-4">
             <div className="row widgets justify-content-center">
               <div className="col-md">
@@ -171,9 +213,10 @@ const AdminPanel = () => {
             </div>
           </div>
 
-          {/* recent signups and current gym users */}
+          {/* Recent Signups and Current Gym Users */}
           <div className="container mt-4">
             <div className="row">
+              {/* Recent Signup */}
               <div className="col">
                 <div
                   className="newcard mb-3 no-border"
@@ -193,12 +236,20 @@ const AdminPanel = () => {
                           <b>Recent Signup</b>
                         </h5>
                         <div className="mt-auto">
-                          <p className="card-text">$NamePlaceholder</p>
-                          <p className="card-text">
-                            <small className="text-body-secondary">
-                              $IDPlaceholder
-                            </small>
-                          </p>
+                          {recentSignup ? (
+                            <>
+                              <p className="card-text">
+                                {recentSignup.name || "N/A"}
+                              </p>
+                              <p className="card-text">
+                                <small className="text-body-secondary">
+                                  ID: {recentSignup.id || "N/A"}
+                                </small>
+                              </p>
+                            </>
+                          ) : (
+                            <p className="card-text">Loading...</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -206,6 +257,7 @@ const AdminPanel = () => {
                 </div>
               </div>
 
+              {/* Current Gym Users */}
               <div className="col">
                 <div
                   className="newcard mb-3 no-border"
@@ -226,11 +278,12 @@ const AdminPanel = () => {
                         </h5>
                         <div className="mt-auto">
                           <p className="card-text">
-                            There are 3 members inside the gym right now.
+                            There are {currentMembers} members inside the gym
+                            right now.
                           </p>
                           <p className="card-text">
                             <small className="text-body-secondary">
-                              Updated 2 mins ago based on last login.
+                              Updated every 30 seconds.
                             </small>
                           </p>
                         </div>

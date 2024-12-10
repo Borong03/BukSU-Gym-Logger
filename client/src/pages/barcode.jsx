@@ -49,7 +49,9 @@ const Barcode = () => {
 
       // Save token and user role in localStorage
       localStorage.setItem("jwtToken", token); // Save JWT token
-      localStorage.setItem("role", isAdmin ? "admin" : "user"); // Save role
+      localStorage.setItem("userId", userId); // Save userId
+      localStorage.setItem("name", firstName || "User"); // Save user name
+      localStorage.setItem("isAdmin", isAdmin ? "true" : "false"); // Save admin status
 
       // Redirect to appropriate dashboard
       const redirectUrl = isAdmin
