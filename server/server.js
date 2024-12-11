@@ -19,6 +19,7 @@ const historyRoutes = require("./routes/history");
 const captchaRoutes = require("./routes/captchaRoutes");
 const emailServiceRoutes = require("./routes/emailService");
 const miscRoutes = require("./routes/misc");
+const reportgen = require("./routes/reportgen");
 
 // user schema and model
 const userSchema = new mongoose.Schema({
@@ -214,6 +215,7 @@ app.use("/api", historyRoutes);
 app.use(captchaRoutes);
 app.use("/email", emailServiceRoutes);
 app.use("/misc", miscRoutes);
+app.use("/report", reportgen);
 
 // server listening on..
 const PORT = process.env.PORT || 5000;

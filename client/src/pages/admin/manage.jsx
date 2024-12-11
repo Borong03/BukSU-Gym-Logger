@@ -137,13 +137,8 @@ const ManageMembers = () => {
             <a className="nav-link active">Members</a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" onClick={() => navigate("/admin/report")}>
+            <a className="nav-link" onClick={() => navigate("/admin/generate")}>
               Report Generation
-            </a>
-          </li>
-          <li className="nav-item">
-            <a className="nav-link" onClick={() => navigate("")}>
-              Equipments
             </a>
           </li>
         </ul>

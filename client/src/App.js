@@ -19,6 +19,7 @@ import Manage from "./pages/admin/manage";
 import Update from "./pages/admin/update";
 import Admin from "./pages/admin/admin";
 import Managed from "./pages/admin/manageSigned";
+import Attendance from "./pages/admin/attendance";
 
 // components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -97,6 +98,7 @@ function App() {
           <Route path="/leaderboards" element={<Leaderboards />} />
           <Route path="/success" element={<Success />} />
           <Route path="/history" element={<History />} />
+
           <Route
             path="/dash"
             element={
@@ -153,6 +155,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/generate"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Attendance />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/admin"
             element={

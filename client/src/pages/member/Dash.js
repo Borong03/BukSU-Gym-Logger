@@ -236,7 +236,9 @@ const Dash = () => {
               </h5>
               <p className="card-text">
                 {loading ? (
-                  "Loading your visit count..."
+                  <div className="spinner-border m-5" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 ) : (
                   <>
                     Your time in has been logged. <br />
