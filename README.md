@@ -21,5 +21,9 @@ T172
 
 ### How to run?
 
-NPM install
-NPM start
+- NPM install on both client and server folders
+- NPM start
+
+------------
+
+> Heads up! This repo does not have a .env file, as there are sensitive credentials like app passwords for Gmail stored there. If you'd like to test this out, you can request an issue and we'll talk about it :3 thanks!
