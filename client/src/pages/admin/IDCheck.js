@@ -26,21 +26,9 @@ const IDCheck = () => {
     e.preventDefault();
 
     try {
-      // Get the token from localStorage (or from wherever it's stored)
-      const token = localStorage.getItem("token");
-
-      // If no token exists, show an error message
-      if (!token) {
-        setError("No token provided");
-        return;
-      }
-
       // Send the token in the headers of the request
       const response = await axios.get("http://localhost:5000/auth/search", {
         params: { email },
-        headers: {
-          Authorization: `Bearer ${token}`, // Add the token in the Authorization header
-        },
       });
 
       setResult(response.data);
