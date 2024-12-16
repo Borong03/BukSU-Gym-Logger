@@ -130,10 +130,16 @@ const Login = () => {
                   />
                 </div>
               </button>
-              <div className="divider">
+              <div className="divider" style={{ textAlign: "center" }}>
                 <img
                   className="svgs centerpls"
-                  style={{ width: "80%", maxWidth: "300px" }}
+                  style={{
+                    display: "block",
+                    margin: "0 auto",
+                    marginBottom: "1rem",
+                    width: "80%",
+                    maxWidth: "300px",
+                  }}
                   src="media/divider2.svg"
                   alt="Divider"
                 />

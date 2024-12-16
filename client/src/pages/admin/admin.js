@@ -58,6 +58,8 @@ const AdminPanel = () => {
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
     localStorage.removeItem("role");
+    localStorage.removeItem("jwtToken");
+    localStorage.removeItem("isAdmin");
     navigate("/login");
   };
 
