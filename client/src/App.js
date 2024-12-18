@@ -20,6 +20,8 @@ import Update from "./pages/admin/update";
 import Admin from "./pages/admin/admin";
 import Managed from "./pages/admin/manageSigned";
 import Attendance from "./pages/admin/attendance";
+import AdminDisclaimer from "./pages/admin/Disclaimer";
+import AdminSignup from "./pages/admin/Signup";
 
 // components
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -136,6 +138,22 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <Manage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/disclaimer"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDisclaimer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/AdminSignup"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminSignup />
               </ProtectedRoute>
             }
           />

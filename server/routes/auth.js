@@ -67,21 +67,17 @@ router.post("/login", async (req, res) => {
     // verify password
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect)
-      return res
-        .status(401)
-        .json({
-          message:
-            "🙊 | Email or Password is incorrect. Please check your credentials and try again.",
-        });
+      return res.status(401).json({
+        message:
+          "🙊 | Email or Password is incorrect. Please check your credentials and try again.",
+      });
 
     // check if the user's account is activated by admin
     if (!user.isActive)
-      return res
-        .status(403)
-        .json({
-          message:
-            "🙁 | User account is not activated. Please visit the admin kiosk with your requirements to get started!",
-        });
+      return res.status(403).json({
+        message:
+          "🙁 | User account is not activated. Please visit the admin kiosk with your requirements to get started!",
+      });
 
     // if the user is not an admin, enforce weekly login visit limit
     if (!user.isAdmin) {
@@ -318,19 +314,23 @@ router.get(
 // callback route for Google OAuth
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:3000/login?error=google_auth_failed",
+  }),
   async (req, res) => {
     try {
       const user = req.user;
 
       if (!user) {
         console.error("Google OAuth: User not found.");
-        return res.redirect("/login");
+        return res.redirect("http://localhost:3000/login?error=user_not_found");
       }
 
       if (!user.isActive) {
         console.warn(`Inactive user: ${user.email}`);
-        return res.redirect("/login?error=inactive_account");
+        return res.redirect(
+          "http://localhost:3000/login?error=inactive_account"
+        );
       }
 
       // Check visit limits and log login time for non-admin users
@@ -342,20 +342,18 @@ router.get(
         });
 
         if (visitCount >= 3) {
-          console.warn(
-            `Weekly visit limit reached for user: ${user.email}, userId: ${user._id}`
+          console.warn(`Weekly visit limit reached for user: ${user.email}`);
+          return res.redirect(
+            `http://localhost:3000/login?error=visit_limit_reached`
           );
-          const frontendUrl =
-            process.env.FRONTEND_URL || "http://localhost:3000";
-          return res.redirect(`${frontendUrl}/limit?userId=${user._id}`);
         }
 
+        // Create login entry only if no open session exists
         const openSession = await LoginHistory.findOne({
           userId: user._id,
           logoutTime: null,
         });
 
-        // Create a new login history entry only if no open session exists
         if (!openSession) {
           await LoginHistory.create({
             userId: user._id,
@@ -366,7 +364,7 @@ router.get(
         }
       }
 
-      // Generate JWT token
+      // Generate JWT token and redirect
       const token = jwt.sign(
         {
           _id: user._id,
@@ -377,15 +375,12 @@ router.get(
         { expiresIn: "5h" }
       );
 
-      // Redirect to frontend /authenticator route
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
-      const redirectUrl = `${frontendUrl}/authenticator?token=${token}&name=${encodeURIComponent(
-        user.firstName
-      )}&userId=${user._id}&isAdmin=${user.isAdmin}`;
-
-      console.log("Redirecting Google-authenticated user to:", redirectUrl);
-
-      return res.redirect(redirectUrl);
+      return res.redirect(
+        `${frontendUrl}/authenticator?token=${token}&name=${encodeURIComponent(
+          user.firstName
+        )}&userId=${user._id}&isAdmin=${user.isAdmin}`
+      );
     } catch (error) {
       console.error("Google OAuth error:", error);
       return res.redirect("/login?error=auth_error");

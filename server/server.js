@@ -111,20 +111,36 @@ app.get("/admin", requireAdmin, (req, res) => {
 
 // route to activate a user
 app.put("/users/activate", async (req, res) => {
-  const { email } = req.body;
+  const { email, version } = req.body;
+
+  if (!email || version === undefined) {
+    return res.status(400).json({
+      message: "Email and version are required.",
+    });
+  }
+
   try {
     const activatedUser = await User.findOneAndUpdate(
-      { email },
-      { isActive: true },
-      { new: true }
+      { email, version }, // Match email and current version
+      { isActive: true, $inc: { version: 1 } }, // Set active and increment version
+      { new: true } // Return the updated document
     );
 
     if (!activatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(409).json({
+        message: "Conflict detected. Please reload and try again.",
+      });
     }
-    res.status(200).json({ message: "User activated", user: activatedUser });
+
+    res.status(200).json({
+      message: "User activated successfully",
+      user: activatedUser,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Error activating user" });
+    console.error("Error activating user:", err);
+    res.status(500).json({
+      message: "Internal server error.",
+    });
   }
 });
 
@@ -171,41 +187,78 @@ app.get("/users", async (req, res) => {
 
 // route to update user’s first or last name
 app.put("/users/update-name", async (req, res) => {
-  const { email, firstName, lastName } = req.body;
+  const { email, firstName, lastName, password, version } = req.body;
+
+  if (!email || version === undefined) {
+    return res.status(400).json({
+      message: "Email, version, and at least one name field are required.",
+    });
+  }
+
   try {
     const updateData = {};
     if (firstName) updateData.firstName = firstName;
     if (lastName) updateData.lastName = lastName;
 
-    const updatedUser = await User.findOneAndUpdate({ email }, updateData, {
-      new: true,
-    });
+    // If password is provided, hash it before updating
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { email, version },
+      { ...updateData, $inc: { version: 1 } },
+      { new: true }
+    );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res
+        .status(409)
+        .json({ message: "Conflict detected. Please try again." });
     }
-    res.status(200).json(updatedUser);
+
+    res
+      .status(200)
+      .json({ message: "User updated successfully", user: updatedUser });
   } catch (err) {
-    res.status(500).json({ message: "Error updating user" });
+    console.error("Error updating user:", err);
+    res.status(500).json({ message: "Internal server error." });
   }
 });
 
 // route to archive (deactivate) a user
 app.put("/users/archive", async (req, res) => {
-  const { email } = req.body;
+  const { email, version } = req.body;
+
+  if (!email || version === undefined) {
+    return res.status(400).json({
+      message: "Email and version are required.",
+    });
+  }
+
   try {
     const archivedUser = await User.findOneAndUpdate(
-      { email },
-      { isActive: false },
-      { new: true }
+      { email, version }, // Match email and current version
+      { isActive: false, $inc: { version: 1 } }, // Set inactive and increment version
+      { new: true } // Return the updated document
     );
 
     if (!archivedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(409).json({
+        message: "Conflict detected. Please reload and try again.",
+      });
     }
-    res.status(200).json({ message: "User archived", user: archivedUser });
+
+    res.status(200).json({
+      message: "User archived successfully",
+      user: archivedUser,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Error archiving user" });
+    console.error("Error archiving user:", err);
+    res.status(500).json({
+      message: "Internal server error.",
+    });
   }
 });
 

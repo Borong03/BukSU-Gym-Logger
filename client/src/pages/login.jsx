@@ -1,33 +1,72 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import * as bootstrap from "bootstrap";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [localPart, setLocalPart] = useState("");
   const [domain, setDomain] = useState("@student.buksu.edu.ph");
   const [password, setPassword] = useState("");
+  const [termsChecked, setTermsChecked] = useState(false);
+
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  // Show toast notification with a message
+  // Show toast notification
   const showToast = (message) => {
     const toastBody = document.querySelector("#loginToast .toast-body");
-    if (toastBody) {
-      toastBody.textContent = message;
-    }
+    if (toastBody) toastBody.textContent = message;
+
     const toastEl = document.getElementById("loginToast");
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
   };
 
+  // Handle errors from Google OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+
+    if (error) {
+      let errorMessage = "An unknown error occurred.";
+      switch (error) {
+        case "google_auth_failed":
+          errorMessage = "Google authentication failed. Please try again.";
+          break;
+        case "user_not_found":
+          errorMessage =
+            "User not found. You can sign up to the Digital Logging System by clicking on Signup!";
+          break;
+        case "inactive_account":
+          errorMessage =
+            "You are signed up, but not yet activated. Please proceed to the admin kiosk for account activation.";
+          break;
+        case "visit_limit_reached":
+          errorMessage = "Weekly visit limit reached. Access denied.";
+          break;
+        case "auth_error":
+          errorMessage = "An authentication error occurred. Try again.";
+          break;
+        default:
+          errorMessage = "Unexpected error occurred. Please retry.";
+      }
+      showToast(errorMessage);
+    }
+  }, [location]);
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const fullEmail = `${localPart}${domain}`;
+    if (!termsChecked) {
+      showToast("Please agree to the Terms & Privacy Policy.");
+      return;
+    }
 
+    const fullEmail = `${localPart}${domain}`;
     if (!localPart || !password) {
       showToast("Please fill in all fields.");
       return;
@@ -41,7 +80,6 @@ const Login = () => {
       });
 
       const data = await response.json();
-
       if (response.status === 429) {
         showToast(data.message);
         navigate(`/limit?userId=${data.userId}`);
@@ -50,8 +88,6 @@ const Login = () => {
 
       if (response.ok) {
         const { firstName, userId, isAdmin, token } = data;
-
-        // Save all required data in localStorage
         localStorage.setItem("jwtToken", token);
         localStorage.setItem("userId", userId);
         localStorage.setItem("name", firstName);
@@ -60,7 +96,6 @@ const Login = () => {
         const redirectUrl = isAdmin
           ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
           : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
-
         navigate(redirectUrl);
       } else {
         showToast(data.message || "Login failed, please try again.");
@@ -72,14 +107,8 @@ const Login = () => {
   };
 
   // Handle Google sign-in
-  const handleGoogleSignIn = async () => {
-    try {
-      window.location.href = `${API_URL}/auth/google`; // Ensure backend endpoint matches
-      localStorage.setItem("isGoogleAuthenticated", "true"); // Store Google login state
-      localStorage.setItem("isAuthenticated", "true"); // General authentication flag
-    } catch (error) {
-      console.error("Google Sign-In error:", error);
-    }
+  const handleGoogleSignIn = () => {
+    window.location.href = `${API_URL}/auth/google`;
   };
 
   return (
@@ -117,6 +146,7 @@ const Login = () => {
                   />
                 </div>
               </button>
+
               <button
                 className="google-signin-button"
                 onClick={() => navigate("/barcode")}
@@ -130,7 +160,16 @@ const Login = () => {
                   />
                 </div>
               </button>
+<<<<<<< Updated upstream
               <div className="divider" style={{ textAlign: "center" }}>
+=======
+<<<<<<< Updated upstream
+              <div className="divider">
+=======
+
+              <div className="divider" style={{ textAlign: "center" }}>
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
                 <img
                   className="svgs centerpls"
                   style={{
@@ -175,13 +214,12 @@ const Login = () => {
                   <input
                     type="password"
                     className="form-control"
-                    id="floatingPassword"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <label htmlFor="floatingPassword">Password</label>
+                  <label>Password</label>
                 </div>
 
                 <div className="form-check">
@@ -189,6 +227,8 @@ const Login = () => {
                     className="form-check-input"
                     type="checkbox"
                     id="flexCheckDefault"
+                    checked={termsChecked}
+                    onChange={() => setTermsChecked(!termsChecked)}
                     required
                   />
                   <label
@@ -202,12 +242,11 @@ const Login = () => {
                     >
                       Terms & Conditions
                     </b>{" "}
-                    and
+                    and{" "}
                     <b
                       className="text-primary"
                       onClick={() => setShowPrivacy(true)}
                     >
-                      {" "}
                       BukSU Data Collection & Privacy
                     </b>
                   </label>
@@ -230,14 +269,12 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Terms and Privacy Modals */}
+      {/* Terms Modal */}
       <Modal show={showTerms} onHide={() => setShowTerms(false)} centered>
         <Modal.Header>
           <Modal.Title>Terms & Conditions</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          <p>Terms and conditions go here...</p>
-        </Modal.Body>
+        <Modal.Body>Terms and conditions content...</Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowTerms(false)}>
             Got it!
@@ -245,15 +282,14 @@ const Login = () => {
         </Modal.Footer>
       </Modal>
 
+      {/* Privacy Modal */}
       <Modal show={showPrivacy} onHide={() => setShowPrivacy(false)} centered>
         <Modal.Header>
           <Modal.Title>BukSU Data Collection & Privacy</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            In compliance with the <b>Data Privacy Act of 2012</b>, BukSU
-            Fitness Gym is committed to protecting your data privacy.
-          </p>
+          In compliance with the <b>Data Privacy Act of 2012</b>, BukSU Fitness
+          Gym is committed to protecting your data privacy.
         </Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => setShowPrivacy(false)}>
@@ -262,7 +298,7 @@ const Login = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Toast for Login Notifications */}
+      {/* Toast */}
       <div
         className="toast align-items-center"
         id="loginToast"
@@ -283,7 +319,6 @@ const Login = () => {
             type="button"
             className="btn-close"
             data-bs-dismiss="toast"
-            aria-label="Close"
           ></button>
         </div>
         <div className="toast-body"></div>

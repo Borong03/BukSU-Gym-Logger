@@ -6,50 +6,59 @@ import "./admin.css";
 const UpdateDetails = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = location.state?.user || {}; // Receive data from previous
+  const user = location.state?.user || {};
 
-  // Variables to store user data
+  // State for form fields
   const [firstName, setFirstName] = useState(user.firstName || "");
   const [lastName, setLastName] = useState(user.lastName || "");
   const [email, setEmail] = useState(user.email || "");
+  const [version, setVersion] = useState(user.version || 0);
+  const [password, setPassword] = useState(""); // New password state
 
-  // Show toast notification
   const showToast = (message) => {
     const toastBody = document.querySelector("#updateToast .toast-body");
-    if (toastBody) {
-      toastBody.textContent = message;
-    }
+    if (toastBody) toastBody.textContent = message;
     const toastEl = document.getElementById("updateToast");
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
   };
 
-  // Handle submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Data to be sent:", { email, firstName, lastName }); // Data format
+    console.log("Data to be sent:", {
+      email,
+      firstName,
+      lastName,
+      password,
+      version,
+    });
 
     try {
       const response = await fetch(`http://localhost:5000/users/update-name`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, firstName, lastName }),
+        body: JSON.stringify({ email, firstName, lastName, password, version }),
       });
 
-      const responseText = await response.text();
-      console.log("Response:", responseText); // Log
+      const responseData = await response.json();
 
       if (response.ok) {
-        showToast("User updated successfully!");
-        setTimeout(() => navigate(-1), 3000); // Redirect after 3 seconds
-      } else {
-        const errorData = JSON.parse(responseText);
         showToast(
-          `Failed to update user: ${errorData.message || "Unknown error"}`
+          "User updated successfully! Will return to previous page in 3 seconds."
+        );
+        setTimeout(() => navigate(-1), 3000);
+      } else if (response.status === 409) {
+        showToast(
+          "Conflict detected! Data has been updated elsewhere. Please try again."
+        );
+      } else {
+        showToast(
+          `Failed to update user: ${responseData.message || "Unknown error"}`
         );
       }
     } catch (error) {
+      console.error("Error during update:", error);
       showToast(`Error: ${error.message}`);
     }
   };
@@ -72,8 +81,7 @@ const UpdateDetails = () => {
                 <b>Edit Information</b>
               </h5>
               <p>
-                If a member has made a mistake entering their info, you can
-                update their First and Last Name. <br />
+                Update user details and <br></br>set a new password. <br />
                 <br />
               </p>
             </div>
@@ -120,11 +128,22 @@ const UpdateDetails = () => {
                     id="floatingInput"
                     placeholder="12345678@buksu.edu.ph"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
                     disabled
                   />
                   <label htmlFor="floatingInput">Institutional Email</label>
+                </div>
+
+                {/* New Password Input */}
+                <div className="form-floating mb-3">
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="floatingPassword"
+                    placeholder="New Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <label htmlFor="floatingPassword">New Password</label>
                 </div>
               </div>
 
@@ -145,7 +164,6 @@ const UpdateDetails = () => {
         </div>
       </div>
 
-      {/* Toast for Update Notifications */}
       <div
         className="toast align-items-center"
         id="updateToast"
@@ -166,7 +184,6 @@ const UpdateDetails = () => {
             type="button"
             className="btn-close"
             data-bs-dismiss="toast"
-            aria-label="Close"
           ></button>
         </div>
         <div className="toast-body"></div>

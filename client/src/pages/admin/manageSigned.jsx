@@ -26,6 +26,7 @@ const ManageMembers = () => {
     toast.show();
   };
 
+  // Fetch members
   useEffect(() => {
     const fetchMembers = async () => {
       try {
@@ -50,17 +51,20 @@ const ManageMembers = () => {
     fetchMembers();
   }, []);
 
+  // initialize DataTable
   useEffect(() => {
     if (members.length > 0) {
       new DataTable("#myTable");
     }
   }, [members]);
 
+  // open modal for activation confirmation
   const handleActivateClick = (member) => {
     setSelectedMember(member);
     setShowModal(true);
   };
 
+  // Confirm Activation with email functionality
   const confirmActivation = async () => {
     try {
       const response = await fetch("http://localhost:5000/users/activate", {
@@ -68,21 +72,49 @@ const ManageMembers = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: selectedMember.email }),
+        body: JSON.stringify({
+          email: selectedMember.email,
+          version: selectedMember.version, // send version field
+        }),
       });
 
+      const result = await response.json();
+
       if (response.ok) {
-        await response.json();
+        // send success email after activation
+        try {
+          await fetch("http://localhost:5000/email/send-success-email", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: selectedMember.email,
+            }),
+          });
+
+          showToast(
+            `Congrats, ${selectedMember.firstName} has been activated successfully and notified them via email!`
+          );
+        } catch (emailError) {
+          console.error("Error sending email:", emailError);
+          showToast(
+            `Member activated, but failed to send email to ${selectedMember.email}.`
+          );
+        }
+
+        // remove activated member from state
         const updatedMembers = members.filter(
           (member) => member.email !== selectedMember.email
         );
         setMembers(updatedMembers);
-
-        showToast(`Congrats, ${selectedMember.firstName} has been activated!`);
         setShowModal(false);
+      } else if (response.status === 409) {
+        // handle version conflict
+        showToast(
+          "Conflict detected! Data has been updated elsewhere. Please reload the list."
+        );
       } else {
-        const result = await response.json();
-        console.error("Activation error:", result.message);
         showToast(result.message || "Error activating member.");
       }
     } catch (error) {
@@ -136,7 +168,7 @@ const ManageMembers = () => {
         </ul>
       </div>
 
-      {/* Main content */}
+      {/* Main Content */}
       <div
         className={`content flex-grow-1 ${sidebarOpen ? "sidebar-open" : ""}`}
       >
@@ -199,7 +231,7 @@ const ManageMembers = () => {
             </li>
             <li className="nav-item">
               <button
-                onClick={() => navigate("/admin/signup")}
+                onClick={() => navigate("/admin/disclaimer")}
                 className="btn circlebuttonsb"
               >
                 <i className="bi bi-plus-lg"></i>
@@ -237,7 +269,7 @@ const ManageMembers = () => {
                     <td>
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-success"
                         onClick={() => handleActivateClick(member)}
                       >
                         Activate Member
@@ -261,7 +293,10 @@ const ManageMembers = () => {
           <strong>
             {selectedMember?.firstName} {selectedMember?.lastName}
           </strong>
-          ?
+          ?<br></br>
+          <br></br>
+          Make sure they are bonafide students, instructors, or personnel of
+          Bukidnon State University.
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>

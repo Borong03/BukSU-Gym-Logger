@@ -1,71 +1,110 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Quagga from "quagga";
 import { useNavigate } from "react-router-dom";
+import * as bootstrap from "bootstrap";
 
 const Barcode = () => {
   const navigate = useNavigate();
   const scannerRef = useRef(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false); // Prevent duplicate requests
+  const [loading, setLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Barcode detection handler
-  const handleBarcodeDetected = (data) => {
-    if (loading) return; // Prevent multiple detections
-    setLoading(true); // Block further detections
-    const barcode = data.codeResult.code;
-    Quagga.stop(); // Stop scanning after detection
-    handleBarcodeLogin(barcode);
+  // Show toast notification
+  const showToast = (message) => {
+    const toastEl = document.getElementById("barcodeToast");
+    if (!toastEl) return;
+
+    const toastBody = toastEl.querySelector(".toast-body");
+    if (toastBody) toastBody.textContent = message;
+
+    const toast =
+      bootstrap.Toast.getInstance(toastEl) || new bootstrap.Toast(toastEl);
+    toast.show();
   };
 
   // Handle barcode login
-  const handleBarcodeLogin = async (barcode) => {
-    setError(null); // Clear any existing errors
+  const handleBarcodeLogin = useCallback(
+    async (barcode) => {
+      try {
+        console.log("Sending barcode to server:", barcode);
 
-    try {
-      const response = await fetch("http://localhost:5000/auth/login-barcode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ barcode }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null); // Handle non-JSON responses
-        if (response.status === 429) {
-          // Weekly visit limit reached
-          if (data && data.userId) {
-            navigate(`/limit?userId=${data.userId}`);
-          } else {
-            setError("Weekly visit limit reached, but no userId returned.");
+        const response = await fetch(
+          "http://localhost:5000/auth/login-barcode",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ barcode }),
           }
-        } else {
-          setError(data?.message || "Barcode login failed.");
+        );
+
+        // Stop processing immediately if server responds with an error
+        if (!response.ok) {
+          let message = "User not found.";
+          if (response.status === 403) {
+            message =
+              "Your account is not activated. Please visit the admin kiosk for account activation.";
+          } else if (response.status === 429) {
+            message = "Weekly visit limit reached.";
+          }
+          showToast(message);
+          return;
         }
-        Quagga.start(); // Restart scanning for retries
-        return;
+
+        const data = await response.json();
+        const { firstName, userId, isAdmin, token } = data;
+
+        // Save user data
+        localStorage.setItem("jwtToken", token);
+        localStorage.setItem("userId", userId);
+        localStorage.setItem("name", firstName || "User");
+        localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
+
+        const redirectUrl = isAdmin
+          ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
+          : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
+        navigate(redirectUrl);
+      } catch (err) {
+        console.error("Error during barcode login:", err);
+        showToast("An unexpected error occurred. Please try again.");
+      } finally {
+        setIsProcessing(false);
+        setLoading(false);
+        Quagga.start(); // Restart the scanner after processing
       }
+    },
+    [navigate]
+  );
 
-      const data = await response.json();
-      const { firstName, userId, isAdmin, token } = data;
+  // Barcode detection handler
+  const handleBarcodeDetected = useCallback(
+    (data) => {
+      try {
+        if (!data?.codeResult?.code) {
+          console.warn("Invalid or incomplete barcode data:", data);
+          return; // Skip invalid results
+        }
 
-      // Save token and user role in localStorage
-      localStorage.setItem("jwtToken", token); // Save JWT token
-      localStorage.setItem("userId", userId); // Save userId
-      localStorage.setItem("name", firstName || "User"); // Save user name
-      localStorage.setItem("isAdmin", isAdmin ? "true" : "false"); // Save admin status
+        if (isProcessing || loading) return; // Avoid duplicate processing
 
-      // Redirect to appropriate dashboard
-      const redirectUrl = isAdmin
-        ? `/admin?name=${encodeURIComponent(firstName)}&userId=${userId}`
-        : `/dash?name=${encodeURIComponent(firstName)}&userId=${userId}`;
-      navigate(redirectUrl);
-    } catch (err) {
-      console.error("Error during barcode login:", err);
-      setError("An error occurred while processing the barcode.");
-      Quagga.start(); // Restart scanning for retries
-    } finally {
-      setLoading(false); // Allow new requests
-    }
-  };
+        const barcode = data.codeResult.code;
+        console.log("Valid barcode detected:", barcode);
+
+        setIsProcessing(true);
+        setLoading(true);
+
+        Quagga.offDetected(handleBarcodeDetected); // Stop Quagga event
+        Quagga.stop(); // Stop Quagga completely
+        handleBarcodeLogin(barcode); // Process the barcode
+      } catch (err) {
+        console.error("Error in barcode detection:", err);
+        showToast("Error processing the barcode. Please try again.");
+        setIsProcessing(false);
+        setLoading(false);
+        Quagga.start(); // Restart Quagga if error occurs
+      }
+    },
+    [handleBarcodeLogin, isProcessing, loading]
+  );
 
   // Initialize Quagga
   useEffect(() => {
@@ -73,34 +112,29 @@ const Barcode = () => {
       {
         inputStream: {
           type: "LiveStream",
-          target: scannerRef.current, // Attach camera feed here
-          constraints: {
-            facingMode: "environment", // Use rear camera
-          },
+          target: scannerRef.current,
+          constraints: { facingMode: "environment" },
         },
-        decoder: {
-          readers: ["code_39_reader"], // Use Code 39 barcode format
-        },
+        decoder: { readers: ["code_39_reader"] },
+        locate: true,
       },
       (err) => {
         if (err) {
           console.error("Error initializing Quagga:", err);
-          setError("Unable to access camera for barcode scanning.");
+          showToast("Unable to access the camera.");
           return;
         }
         Quagga.start();
       }
     );
 
-    // Add barcode detection event
     Quagga.onDetected(handleBarcodeDetected);
 
-    // Cleanup Quagga on component unmount
     return () => {
       Quagga.offDetected(handleBarcodeDetected);
       Quagga.stop();
     };
-  }, []); // Empty dependency array ensures this runs only once
+  }, [handleBarcodeDetected]);
 
   return (
     <div
@@ -115,23 +149,22 @@ const Barcode = () => {
               <h5 className="card-title">
                 <b>Login with Barcode</b>
               </h5>
-              <p className="card-text">
-                Please scan your barcode to login. <br />
-                You can find your barcode below your Student ID.
-              </p>
-              {error && <p className="text-danger">{error}</p>}
+              <p className="card-text">Please scan your barcode to login.</p>
+
+              {/* Camera Viewfinder with Smaller Size */}
               <div
                 className="barcode-container"
                 style={{
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  width: "600px",
-                  height: "300px",
+                  width: "400px", // Smaller width
+                  height: "300px", // Smaller height
                   margin: "0 auto 20px",
                   border: "2px solid #ccc",
                   borderRadius: "10px",
-                  overflow: "hidden",
+                  backgroundColor: "#000", // Black background for contrast
+                  overflow: "hidden", // Ensures content doesn't exceed the container
                 }}
               >
                 <div
@@ -139,6 +172,7 @@ const Barcode = () => {
                   style={{
                     width: "100%",
                     height: "100%",
+                    objectFit: "cover", // Scales video to fit container without overflow
                   }}
                 ></div>
               </div>
@@ -153,6 +187,32 @@ const Barcode = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Toast Notification */}
+      <div
+        className="toast align-items-center"
+        id="barcodeToast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: "fixed",
+          bottom: "1rem",
+          right: "1rem",
+          zIndex: 1055,
+        }}
+      >
+        <div className="toast-header">
+          <strong className="me-auto">Notification</strong>
+          <small>Just now</small>
+          <button
+            type="button"
+            className="btn-close"
+            data-bs-dismiss="toast"
+          ></button>
+        </div>
+        <div className="toast-body"></div>
       </div>
     </div>
   );

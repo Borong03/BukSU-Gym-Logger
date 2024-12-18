@@ -190,7 +190,7 @@ const AdminPanel = () => {
               <div className="col-md-4">
                 <div
                   className="newcard mb-4 no-border"
-                  onClick={() => navigate("/admin/reports")}
+                  onClick={() => navigate("/admin/generate")}
                 >
                   <img
                     src="../media/equip.png"

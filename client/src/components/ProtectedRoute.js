@@ -1,19 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuthentication = () => {
       const token = localStorage.getItem("jwtToken");
 
+      // Allow access to /limit route even without a token
+      if (location.pathname === "/limit") {
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
       if (token) {
         try {
           const decodedToken = jwtDecode(token);
-          const expirationDate = decodedToken.exp * 1000; // convert to milisecond
+          const expirationDate = decodedToken.exp * 1000; // convert to milliseconds
 
           if (expirationDate > Date.now()) {
             const role =
@@ -42,12 +50,13 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     };
 
     checkAuthentication();
-  }, [requiredRole]);
+  }, [requiredRole, location.pathname]);
 
   if (isLoading) {
     return <div>Loading...</div>; // show loading state while checking authentication
   }
 
+  // Render children for /limit or authenticated routes
   return isAuthenticated ? children : <Navigate to="/login" />;
 };
 
