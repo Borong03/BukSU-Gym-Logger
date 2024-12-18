@@ -160,16 +160,7 @@ const Login = () => {
                   />
                 </div>
               </button>
-<<<<<<< Updated upstream
               <div className="divider" style={{ textAlign: "center" }}>
-=======
-<<<<<<< Updated upstream
-              <div className="divider">
-=======
-
-              <div className="divider" style={{ textAlign: "center" }}>
->>>>>>> Stashed changes
->>>>>>> Stashed changes
                 <img
                   className="svgs centerpls"
                   style={{
